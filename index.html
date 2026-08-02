@@ -670,6 +670,31 @@ const congregationsCollection = collection(firestore, 'congregations');
 const auth = getAuth(app);
 const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 
+// Aggiorna la visibilità di adminArea e del form di login in base all'utente autenticato
+function aggiornaPannelloAdmin(user) {
+  currentUser = user;
+  isAdmin = !!user && user.uid === ADMIN_UID;
+
+  const adminArea = document.getElementById('adminArea');
+  const adminLoginWrap = document.getElementById('adminLoginWrap');
+  const adminLogin = document.getElementById('adminLogin');
+  const adminUserInfo = document.getElementById('adminUserInfo');
+
+  if (isAdmin) {
+    if (adminArea) adminArea.style.display = 'block';
+    if (adminLoginWrap) adminLoginWrap.style.display = 'none';
+    if (adminLogin) adminLogin.style.display = 'none';
+    if (adminUserInfo && user) {
+      adminUserInfo.textContent = `Loggato come: ${user.email || user.uid}`;
+    }
+  } else {
+    if (adminArea) adminArea.style.display = 'none';
+    if (adminLoginWrap) adminLoginWrap.style.display = 'block';
+    if (adminLogin) adminLogin.style.display = 'block';
+    if (adminUserInfo) adminUserInfo.textContent = '';
+  }
+}
+
 // Gestisce il risultato del redirect Google al caricamento della pagina
 getRedirectResult(auth).then((result) => {
   if (!result) return;
@@ -678,13 +703,14 @@ getRedirectResult(auth).then((result) => {
     if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
     signOut(auth).catch(err => console.error('Errore logout:', err));
   } else {
-    // Redirect avvenuto con successo: apri il modale per mostrare l'area admin
+    // Redirect avvenuto con successo: apri il modale e mostra l'area admin
     const modal = document.getElementById('adminModal');
     if (modal) {
       modal.classList.add('show');
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
     }
+    aggiornaPannelloAdmin(result.user);
   }
 }).catch(err => {
   console.error('Errore redirect Google:', err);
@@ -729,28 +755,7 @@ function formatCreatedAt(createdAt) {
 
 // Rileva cambio stato autenticazione
 onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  isAdmin = !!user && user.uid === ADMIN_UID;
-
-  const adminArea = document.getElementById('adminArea');
-  const adminLoginWrap = document.getElementById('adminLoginWrap');
-  const adminLogin = document.getElementById('adminLogin');
-  const adminUserInfo = document.getElementById('adminUserInfo');
-
-  if (isAdmin) {
-    if (adminArea) adminArea.style.display = 'block';
-    if (adminLoginWrap) adminLoginWrap.style.display = 'none';
-    if (adminLogin) adminLogin.style.display = 'none';
-    if (adminUserInfo && user) {
-      adminUserInfo.textContent = `Loggato come: ${user.email || user.uid}`;
-    }
-  } else {
-    if (adminArea) adminArea.style.display = 'none';
-    if (adminLoginWrap) adminLoginWrap.style.display = 'block';
-    if (adminLogin) adminLogin.style.display = 'block';
-    if (adminUserInfo) adminUserInfo.textContent = '';
-  }
-
+  aggiornaPannelloAdmin(user);
   renderAdminList();
   renderCleaningTable();
 });
