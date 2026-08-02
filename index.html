@@ -4,8 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PrenotaLocale</title>
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#c29c62" />
 <link rel="icon" href="icons/icon-192.svg" />
 <meta name="copyright" content="© 2025 PrenotaLocale - rfatone@gmail.com" />
 <style>
@@ -550,7 +548,7 @@ button.danger:hover{background:#b71c1c}
             <input id="adminUser" type="email" required>
           </label>
           <label>Password
-            <input id="adminPass" type="password" required>
+            <input id="adminPass" type="password" autocomplete="current-password" required>
           </label>
           <div style="display:flex;gap:8px">
             <button class="btn" type="submit">Accedi</button>
@@ -1802,19 +1800,7 @@ document.getElementById('nextMonth').addEventListener('click', () => {
 // Init
 renderCalendar();
 
-if('serviceWorker' in navigator){ 
-  window.addEventListener('load', ()=>{ 
-    navigator.serviceWorker.register('service-worker.js').catch(()=>console.log('sw failed')); 
-  }); 
-}
 </script>
 
-<script>
-if('serviceWorker' in navigator){ 
-  window.addEventListener('load', ()=>{ 
-    navigator.serviceWorker.register('service-worker.js').catch(()=>console.log('sw failed')); 
-  }); 
-}
-</script>
 </body>
 </html>
