@@ -1023,9 +1023,17 @@ function renderCleaningTable() {
     return;
   }
 
-  let currentMonthLabel = '';
+  // Visualizzazione pubblica: sole 4 settimane a partire da quella in corso (o la prima futura)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let publicStartIdx = rows.findIndex(w => { const e = parseLocalDate(w.weekEnd); return e && e >= today; });
+  if (publicStartIdx < 0) publicStartIdx = rows.length;
+  const publicRows = rows.slice(publicStartIdx, publicStartIdx + 4);
 
-  rows.forEach(week => {
+  let currentMonthLabel = '';
+  let adminMonthLabel = '';
+
+  publicRows.forEach(week => {
     const weekStartDate = parseLocalDate(week.weekStart);
     const year = weekStartDate ? weekStartDate.getFullYear() : '';
     const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
@@ -1040,11 +1048,6 @@ function renderCleaningTable() {
       monthRow.className = 'cleaning-month-row';
       monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
       body.appendChild(monthRow);
-
-      const adminMonthRow = document.createElement('tr');
-      adminMonthRow.className = 'cleaning-month-row';
-      adminMonthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
-      adminBody.appendChild(adminMonthRow);
 
       const cardMonthTitle = document.createElement('div');
       cardMonthTitle.className = 'cleaning-card-header';
@@ -1077,6 +1080,25 @@ function renderCleaningTable() {
       </div>
     `;
     cardsContainer.appendChild(card);
+  });
+
+  // Tabella admin: tutte le settimane
+  rows.forEach(week => {
+    const weekStartDate = parseLocalDate(week.weekStart);
+    const year = weekStartDate ? weekStartDate.getFullYear() : '';
+    const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
+    const monthLabel = formatCleaningMonthLabel(weekStartDate);
+    const supplyKey = getMonthSupplyKey(year, month);
+    const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
+
+    if (monthLabel && monthLabel !== adminMonthLabel) {
+      adminMonthLabel = monthLabel;
+
+      const adminMonthRow = document.createElement('tr');
+      adminMonthRow.className = 'cleaning-month-row';
+      adminMonthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      adminBody.appendChild(adminMonthRow);
+    }
 
     const adminRow = document.createElement('tr');
     if (isCurrentWeek(week.weekStart, week.weekEnd)) adminRow.classList.add('cleaning-row-current');
