@@ -166,6 +166,50 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     color: var(--muted);
 }
 
+/* Sezione pulizie */
+.cleaning-card{
+    grid-column: 1 / -1;
+}
+.cleaning-table-wrap{
+    overflow:auto;
+}
+.cleaning-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:780px;
+}
+.cleaning-table th,
+.cleaning-table td{
+    border-bottom:1px solid #eee;
+    padding:10px 8px;
+    text-align:left;
+    font-size:14px;
+    vertical-align:middle;
+}
+.cleaning-table th{
+    color:var(--accent);
+    background:rgba(123,63,0,0.04);
+    position:sticky;
+    top:0;
+}
+.cleaning-row-current{
+    background:#fff9e6;
+}
+.cleaning-admin-controls{
+    margin:10px 0 14px 0;
+    display:none;
+    grid-template-columns:repeat(4,minmax(140px,1fr));
+    gap:8px;
+}
+.cleaning-admin-controls button{
+    white-space:nowrap;
+}
+@media(max-width:900px){
+    .cleaning-admin-controls{
+        grid-template-columns:1fr;
+    }
+}
+
 /* Liste area admin con altezze contenute */
 #adminList{
     max-height: 220px;
@@ -335,6 +379,42 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
         </div>
     </div>
   </aside>
+
+  <section class="card cleaning-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+      <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
+      <div class="meta">Programma annuale Locale Espositori</div>
+    </div>
+
+    <div id="cleaningAdminControls" class="cleaning-admin-controls">
+      <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
+      <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
+      <input id="newWeekStart" type="date" aria-label="Inizio settimana">
+      <input id="newWeekEnd" type="date" aria-label="Fine settimana">
+      <select id="newWeekCongregation" aria-label="Congregazione pulizie">
+        <option value="Sanremo Borgo">Sanremo Borgo</option>
+        <option value="Sanremo Centro">Sanremo Centro</option>
+        <option value="Sanremo Ovest">Sanremo Ovest</option>
+      </select>
+      <button id="addCleaningWeekBtn" type="button" class="ghost">Aggiungi settimana</button>
+    </div>
+
+    <div class="cleaning-table-wrap" style="margin-top:8px;">
+      <table class="cleaning-table">
+        <thead>
+          <tr>
+            <th>Settimana</th>
+            <th>Congregazione Pulizie</th>
+            <th>Congregazione Approvvigionamento</th>
+            <th id="cleaningManageHeader" style="display:none;">Gestione</th>
+          </tr>
+        </thead>
+        <tbody id="cleaningTableBody">
+          <tr><td colspan="4" class="meta">Nessun programma pulizie disponibile.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </main>
 
 <!-- Dettagli prenotazioni dal calendario -->
@@ -447,6 +527,9 @@ import {
   getDatabase, ref, push, onValue, set, remove, child 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import {
+  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, deleteDoc, writeBatch, getDocs, where
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
@@ -466,16 +549,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+const firestore = getFirestore(app);
 const reservationsRef   = ref(db, 'reservations');
+const cleaningWeeksCollection = collection(firestore, 'cleaningWeeks');
+const monthlySuppliesCollection = collection(firestore, 'monthlySupplies');
 
 // --- Firebase Auth ---
 const auth = getAuth(app);
 const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 
 let currentReservations = [];
+let cleaningWeeks = [];
+let monthlySupplies = [];
 let currentCalendarDate = new Date(); 
 let isAdmin = false;
 let currentUser = null;
+const CLEANING_CONGREGATIONS = ['Sanremo Borgo', 'Sanremo Centro', 'Sanremo Ovest'];
 
 const CLEANUP_MINUTES = 15;
 
@@ -525,6 +614,7 @@ onAuthStateChanged(auth, (user) => {
   }
 
   renderAdminList();
+  renderCleaningTable();
 });
 
 // --- Database live ---
@@ -538,6 +628,16 @@ onValue(reservationsRef, snapshot => {
   }));
   renderAdminList();
   renderCalendar();
+});
+
+onSnapshot(query(cleaningWeeksCollection, orderBy('weekStart')), snapshot => {
+  cleaningWeeks = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  renderCleaningTable();
+});
+
+onSnapshot(monthlySuppliesCollection, snapshot => {
+  monthlySupplies = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  renderCleaningTable();
 });
 
 // --- Utility ---
@@ -574,6 +674,187 @@ const formatDateLabel = dateStr => {
       return dateStr; 
   } 
 };
+
+const parseLocalDate = (dateStr) => {
+  const [y, m, d] = String(dateStr || '').split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+};
+
+const toISODate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+function getMonthSupplyMap(yearFilter = null) {
+  const map = new Map();
+  monthlySupplies.forEach(item => {
+    if (yearFilter !== null && Number(item.year) !== Number(yearFilter)) return;
+    const key = `${item.year}-${item.month}`;
+    map.set(key, item.supplyCongregation || '');
+  });
+  return map;
+}
+
+function isCurrentWeek(weekStart, weekEnd) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = parseLocalDate(weekStart);
+  const end = parseLocalDate(weekEnd);
+  if (!start || !end) return false;
+  return today >= start && today <= end;
+}
+
+async function updateCleaningCongregation(weekId, value) {
+  if (!isAdmin || !weekId) return;
+  await updateDoc(doc(firestore, 'cleaningWeeks', weekId), { cleaningCongregation: value });
+}
+
+async function updateMonthlySupply(year, month, value) {
+  if (!isAdmin) return;
+  const monthlyId = `${year}-${String(month).padStart(2, '0')}`;
+  await setDoc(doc(firestore, 'monthlySupplies', monthlyId), {
+    year: Number(year),
+    month: Number(month),
+    supplyCongregation: value
+  }, { merge: true });
+}
+
+async function addCleaningWeek() {
+  if (!isAdmin) return;
+  const start = document.getElementById('newWeekStart').value;
+  const end = document.getElementById('newWeekEnd').value;
+  const congregation = document.getElementById('newWeekCongregation').value;
+  const startDate = parseLocalDate(start);
+  const endDate = parseLocalDate(end);
+
+  if (!startDate || !endDate || endDate < startDate) {
+    alert('Inserisci una settimana valida.');
+    return;
+  }
+
+  const weekId = start;
+  await setDoc(doc(firestore, 'cleaningWeeks', weekId), {
+    weekStart: start,
+    weekEnd: end,
+    cleaningCongregation: congregation
+  }, { merge: true });
+}
+
+async function removeCleaningWeek(weekId) {
+  if (!isAdmin || !weekId) return;
+  if (!confirm('Eliminare questa settimana dal programma pulizie?')) return;
+  await deleteDoc(doc(firestore, 'cleaningWeeks', weekId));
+}
+
+async function generateCleaningProgramForYear() {
+  if (!isAdmin) return;
+  const yearInput = document.getElementById('cleaningYearInput');
+  const year = Number(yearInput.value || new Date().getFullYear());
+  if (!year || year < 2020 || year > 2100) {
+    alert('Anno non valido.');
+    return;
+  }
+  if (!confirm(`Generare il programma annuale pulizie per il ${year}?`)) return;
+
+  const jan1 = new Date(year, 0, 1);
+  const dec31 = new Date(year, 11, 31);
+  const start = new Date(jan1);
+  const day = start.getDay();
+  const offset = day === 0 ? 1 : (8 - day);
+  start.setDate(start.getDate() + (day === 1 ? 0 : offset));
+
+  const existingWeeks = await getDocs(query(
+    cleaningWeeksCollection,
+    where('weekStart', '>=', `${year}-01-01`),
+    where('weekStart', '<=', `${year}-12-31`)
+  ));
+  const existingMonthly = await getDocs(query(
+    monthlySuppliesCollection,
+    where('year', '==', year)
+  ));
+
+  const batch = writeBatch(firestore);
+  existingWeeks.forEach(item => batch.delete(item.ref));
+  existingMonthly.forEach(item => batch.delete(item.ref));
+
+  let idx = 0;
+  for (let current = new Date(start); current <= dec31; current.setDate(current.getDate() + 7)) {
+    const weekStart = toISODate(current);
+    const weekEndDate = new Date(current);
+    weekEndDate.setDate(weekEndDate.getDate() + 6);
+    const weekEnd = toISODate(weekEndDate);
+    const congregation = CLEANING_CONGREGATIONS[idx % CLEANING_CONGREGATIONS.length];
+    idx += 1;
+
+    batch.set(doc(firestore, 'cleaningWeeks', weekStart), {
+      weekStart,
+      weekEnd,
+      cleaningCongregation: congregation
+    });
+  }
+
+  for (let month = 1; month <= 12; month += 1) {
+    const monthlyId = `${year}-${String(month).padStart(2, '0')}`;
+    const congregation = CLEANING_CONGREGATIONS[(month - 1) % CLEANING_CONGREGATIONS.length];
+    batch.set(doc(firestore, 'monthlySupplies', monthlyId), {
+      year,
+      month,
+      supplyCongregation: congregation
+    });
+  }
+
+  await batch.commit();
+}
+
+function renderCleaningTable() {
+  const body = document.getElementById('cleaningTableBody');
+  const manageHeader = document.getElementById('cleaningManageHeader');
+  const controls = document.getElementById('cleaningAdminControls');
+  if (!body || !manageHeader || !controls) return;
+
+  controls.style.display = isAdmin ? 'grid' : 'none';
+  manageHeader.style.display = isAdmin ? '' : 'none';
+
+  const rows = cleaningWeeks
+    .slice()
+    .sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
+  const supplyMap = getMonthSupplyMap();
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="meta">Nessun programma pulizie disponibile.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = '';
+  rows.forEach(week => {
+    const row = document.createElement('tr');
+    if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
+
+    const weekStartDate = parseLocalDate(week.weekStart);
+    const year = weekStartDate ? weekStartDate.getFullYear() : '';
+    const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
+    const supplyKey = `${year}-${month}`;
+    const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
+
+    const cleaningCell = isAdmin
+      ? `<select data-role="cleaning" data-id="${week.id}">
+          ${CLEANING_CONGREGATIONS.map(c => `<option value="${c}" ${c === week.cleaningCongregation ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>`
+      : `${week.cleaningCongregation || '-'}`;
+
+    const supplyCell = isAdmin
+      ? `<select data-role="supply" data-year="${year}" data-month="${month}">
+          ${CLEANING_CONGREGATIONS.map(c => `<option value="${c}" ${c === supplyCongregation ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>`
+      : `${supplyCongregation || '-'}`;
+
+    row.innerHTML = `
+      <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
+      <td>${cleaningCell}</td>
+      <td>${supplyCell}</td>
+      ${isAdmin ? `<td><button type="button" class="ghost" data-role="delete-week" data-id="${week.id}">Elimina</button></td>` : ''}
+    `;
+    body.appendChild(row);
+  });
+}
 
 // --- Calendar ---
 const MAX_AVAILABLE_MINUTES = 480; 
@@ -1222,6 +1503,49 @@ importFile.addEventListener('change', function(ev){
 const adminSortSelect = document.getElementById('adminSort');
 if (adminSortSelect) {
   adminSortSelect.addEventListener('change', renderAdminList);
+}
+
+const cleaningYearInput = document.getElementById('cleaningYearInput');
+if (cleaningYearInput) cleaningYearInput.value = String(new Date().getFullYear());
+
+const cleaningTableBody = document.getElementById('cleaningTableBody');
+if (cleaningTableBody) {
+  cleaningTableBody.addEventListener('change', async (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLSelectElement)) return;
+    const role = target.getAttribute('data-role');
+
+    if (role === 'cleaning') {
+      const id = target.getAttribute('data-id');
+      await updateCleaningCongregation(id, target.value);
+    }
+
+    if (role === 'supply') {
+      const year = Number(target.getAttribute('data-year'));
+      const month = Number(target.getAttribute('data-month'));
+      if (year && month) {
+        await updateMonthlySupply(year, month, target.value);
+      }
+    }
+  });
+
+  cleaningTableBody.addEventListener('click', async (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.getAttribute('data-role') !== 'delete-week') return;
+    const weekId = target.getAttribute('data-id');
+    await removeCleaningWeek(weekId);
+  });
+}
+
+const addCleaningWeekBtn = document.getElementById('addCleaningWeekBtn');
+if (addCleaningWeekBtn) {
+  addCleaningWeekBtn.addEventListener('click', addCleaningWeek);
+}
+
+const generateCleaningProgramBtn = document.getElementById('generateCleaningProgramBtn');
+if (generateCleaningProgramBtn) {
+  generateCleaningProgramBtn.addEventListener('click', generateCleaningProgramForYear);
 }
 
 // Navigazione calendario
