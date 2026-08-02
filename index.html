@@ -26,6 +26,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:14p
 .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#7b3f00,#c07a2a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
 .container{max-width:1100px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:1fr 420px;gap:20px}
 @media(max-width:900px){.container{grid-template-columns:1fr}}
+.side-column{display:flex;flex-direction:column;gap:20px}
 .card{background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--card));padding:16px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.04)}
 label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
 input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);font-size:15px}
@@ -166,6 +167,59 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     color: var(--muted);
 }
 
+/* Sezione pulizie */
+.cleaning-table-wrap{
+    overflow:auto;
+}
+.cleaning-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:640px;
+}
+.cleaning-table th,
+.cleaning-table td{
+    border-bottom:1px solid #eee;
+    padding:10px 8px;
+    text-align:left;
+    font-size:14px;
+    vertical-align:middle;
+}
+.cleaning-table th{
+    color:var(--accent);
+    background:rgba(123,63,0,0.04);
+    position:sticky;
+    top:0;
+}
+.cleaning-month-row td{
+    padding:16px 8px 8px 8px;
+    border-bottom:0;
+    color:var(--accent-light);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+}
+.cleaning-month-row:first-child td{
+    padding-top:0;
+}
+.cleaning-row-current td{
+    background:#fff9e6;
+}
+.cleaning-admin-controls{
+    margin:10px 0 14px 0;
+    display:none;
+    grid-template-columns:minmax(140px,180px) auto;
+    gap:8px;
+    align-items:end;
+}
+.cleaning-admin-controls button{
+    white-space:nowrap;
+}
+@media(max-width:900px){
+    .cleaning-admin-controls{
+        grid-template-columns:1fr;
+    }
+}
+
 /* Liste area admin con altezze contenute */
 #adminList{
     max-height: 220px;
@@ -302,46 +356,78 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     </div>
   </section>
 
-  <aside class="card">
-    <div class="calendar-header">
-        <button id="prevMonth" class="small ghost" style="padding: 5px 10px;">&lt;</button>
-        <div id="monthYearDisplay" class="calendar-title"></div>
-        <button id="nextMonth" class="small ghost" style="padding: 5px 10px;">&gt;</button>
-    </div>
-    <div id="calendar" class="calendar-grid">
-        <div class="calendar-weekday">Lun</div>
-        <div class="calendar-weekday">Mar</div>
-        <div class="calendar-weekday">Mer</div>
-        <div class="calendar-weekday">Gio</div>
-        <div class="calendar-weekday">Ven</div>
-        <div class="calendar-weekday">Sab</div>
-        <div class="calendar-weekday">Dom</div>
-    </div>
-    <div style="margin-top:15px; border-top: 1px solid #eee; padding-top: 10px;">
-        <h4 style="margin:0 0 8px 0; color:var(--accent)">Legenda Occupazione</h4>
-        <div style="display:flex; gap:10px; font-size:13px; flex-wrap: wrap;">
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#e8f5e9; border: 1px solid #a5d6a7; margin-right:5px;"></span> 
-              Libero
-            </div>
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#fff9e6; border: 1px solid #ffcc80; margin-right:5px;"></span> 
-              Parziale
-            </div>
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#ffebee; border: 1px solid #ef9a9a; margin-right:5px;"></span> 
-              Pieno
-            </div>
-        </div>
-    </div>
-  </aside>
+  <div class="side-column">
+    <aside class="card">
+      <div class="calendar-header">
+          <button id="prevMonth" class="small ghost" style="padding: 5px 10px;">&lt;</button>
+          <div id="monthYearDisplay" class="calendar-title"></div>
+          <button id="nextMonth" class="small ghost" style="padding: 5px 10px;">&gt;</button>
+      </div>
+      <div id="calendar" class="calendar-grid">
+          <div class="calendar-weekday">Lun</div>
+          <div class="calendar-weekday">Mar</div>
+          <div class="calendar-weekday">Mer</div>
+          <div class="calendar-weekday">Gio</div>
+          <div class="calendar-weekday">Ven</div>
+          <div class="calendar-weekday">Sab</div>
+          <div class="calendar-weekday">Dom</div>
+      </div>
+      <div style="margin-top:15px; border-top: 1px solid #eee; padding-top: 10px;">
+          <h3 style="margin:0 0 8px 0; color:var(--accent)">Legenda Occupazione</h3>
+          <div style="display:flex; gap:10px; font-size:13px; flex-wrap: wrap;">
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#e8f5e9; border: 1px solid #a5d6a7; margin-right:5px;"></span> 
+                Libero
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#fff9e6; border: 1px solid #ffcc80; margin-right:5px;"></span> 
+                Parziale
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#ffebee; border: 1px solid #ef9a9a; margin-right:5px;"></span> 
+                Pieno
+              </div>
+          </div>
+      </div>
+    </aside>
+
+    <section class="card cleaning-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
+        <div class="meta">Programma annuale Locale Espositori</div>
+      </div>
+
+      <div id="cleaningAdminControls" class="cleaning-admin-controls">
+        <label style="margin:0;">
+          Anno programma
+          <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
+        </label>
+        <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
+      </div>
+
+      <div class="cleaning-table-wrap" style="margin-top:8px;">
+        <table class="cleaning-table">
+          <thead>
+            <tr>
+              <th>Settimana</th>
+              <th>Congregazione Pulizie</th>
+              <th>Congregazione Approvvigionamento</th>
+            </tr>
+          </thead>
+          <tbody id="cleaningTableBody">
+            <tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </main>
 
 <!-- Dettagli prenotazioni dal calendario -->
 <div id="detailsModal" class="modal" aria-hidden="true" role="dialog">
   <div class="modal-content" style="max-width: 400px; padding: 15px;">
       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h4 id="detailsModalTitle" style="margin:0; color:var(--accent);">Dettagli Prenotazioni</h4>
+          <h3 id="detailsModalTitle" style="margin:0; color:var(--accent);">Dettagli Prenotazioni</h3>
           <button id="closeDetailsModal" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--muted)">&times;</button>
       </div>
       <div id="detailsListContainer" class="details-list"></div>
@@ -411,7 +497,7 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
       <!-- Area Admin vera e propria, visibile solo se isAdmin === true -->
       <div id="adminArea" style="display:none;margin-top:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <h4 style="margin:0 0 10px 0; color:var(--accent)">Gestione Prenotazioni</h4>
+          <h3 style="margin:0 0 10px 0; color:var(--accent)">Gestione Prenotazioni</h3>
           <div class="meta" id="adminUserInfo" style="font-size:12px;"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px; flex-wrap: wrap;">
@@ -447,6 +533,9 @@ import {
   getDatabase, ref, push, onValue, set, remove, child 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import {
+  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, writeBatch, getDocs, where
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
@@ -466,16 +555,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+const firestore = getFirestore(app);
 const reservationsRef   = ref(db, 'reservations');
+const cleaningWeeksCollection = collection(firestore, 'cleaningWeeks');
+const monthlySuppliesCollection = collection(firestore, 'monthlySupplies');
 
 // --- Firebase Auth ---
 const auth = getAuth(app);
 const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 
 let currentReservations = [];
+let cleaningWeeks = [];
+let monthlySupplies = [];
 let currentCalendarDate = new Date(); 
 let isAdmin = false;
 let currentUser = null;
+const CLEANING_CONGREGATIONS = ['Sanremo Borgo', 'Sanremo Centro', 'Sanremo Ovest'];
 
 
 // Nomi giorni (per popup e createdAt)
@@ -488,6 +583,7 @@ const WEEKDAY_NAMES = [
   'Venerdì',
   'Sabato'
 ];
+const MONTH_NAMES = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
 // Utility formattazione createdAt
 function formatCreatedAt(createdAt) {
@@ -524,6 +620,7 @@ onAuthStateChanged(auth, (user) => {
   }
 
   renderAdminList();
+  renderCleaningTable();
 });
 
 // --- Database live ---
@@ -537,6 +634,16 @@ onValue(reservationsRef, snapshot => {
   }));
   renderAdminList();
   renderCalendar();
+});
+
+onSnapshot(query(cleaningWeeksCollection, orderBy('weekStart')), snapshot => {
+  cleaningWeeks = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  renderCleaningTable();
+});
+
+onSnapshot(monthlySuppliesCollection, snapshot => {
+  monthlySupplies = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  renderCleaningTable();
 });
 
 // --- Utility ---
@@ -573,6 +680,190 @@ const formatDateLabel = dateStr => {
       return dateStr; 
   } 
 };
+
+// --- Pulizie ---
+const parseLocalDate = (dateStr) => {
+  const [y, m, d] = String(dateStr || '').split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+};
+
+function getMonthSupplyKey(year, month) {
+  return `${year}-${pad(month)}`;
+}
+
+function formatCleaningMonthLabel(date) {
+  if (!date) return '';
+  return `${MONTH_NAMES[date.getMonth()].toUpperCase()} ${date.getFullYear()}`;
+}
+
+function getMonthSupplyMap() {
+  const map = new Map();
+  monthlySupplies.forEach(item => {
+    const key = getMonthSupplyKey(item.year, item.month);
+    map.set(key, item.supplyCongregation || '');
+  });
+  return map;
+}
+
+function getCleaningCongregationOptions(selectedValue) {
+  return CLEANING_CONGREGATIONS
+    .map(c => `<option value="${c}" ${c === selectedValue ? 'selected' : ''}>${c}</option>`)
+    .join('');
+}
+
+function isCurrentWeek(weekStart, weekEnd) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = parseLocalDate(weekStart);
+  const end = parseLocalDate(weekEnd);
+  if (!start || !end) return false;
+  return today >= start && today <= end;
+}
+
+async function updateCleaningCongregation(weekId, value) {
+  if (!isAdmin || !weekId) return;
+  await updateDoc(doc(firestore, 'cleaningWeeks', weekId), { cleaningCongregation: value });
+}
+
+async function updateMonthlySupply(year, month, value) {
+  if (!isAdmin) return;
+  const monthlyId = getMonthSupplyKey(year, month);
+  await setDoc(doc(firestore, 'monthlySupplies', monthlyId), {
+    year: Number(year),
+    month: Number(month),
+    supplyCongregation: value
+  }, { merge: true });
+}
+
+function getCleaningWeeksForYear(year) {
+  const weeks = [];
+  const lastDayOfYear = new Date(year, 11, 31);
+
+  for (let current = new Date(year, 0, 1); current <= lastDayOfYear;) {
+    const weekStart = formatDateStr(current);
+    const weekEndDate = new Date(current);
+    const daysUntilSunday = weekEndDate.getDay() === 0 ? 0 : 7 - weekEndDate.getDay();
+    weekEndDate.setDate(weekEndDate.getDate() + daysUntilSunday);
+
+    if (weekEndDate > lastDayOfYear) {
+      weekEndDate.setTime(lastDayOfYear.getTime());
+    }
+
+    weeks.push({
+      weekStart,
+      weekEnd: formatDateStr(weekEndDate),
+      cleaningCongregation: CLEANING_CONGREGATIONS[weeks.length % CLEANING_CONGREGATIONS.length]
+    });
+
+    current = new Date(weekEndDate);
+    current.setDate(current.getDate() + 1);
+  }
+
+  return weeks;
+}
+
+async function generateCleaningProgramForYear() {
+  if (!isAdmin) return;
+  const yearInput = document.getElementById('cleaningYearInput');
+  const year = Number(yearInput.value || new Date().getFullYear());
+  if (!year || year < 2020 || year > 2100) {
+    alert('Anno non valido.');
+    return;
+  }
+  if (!confirm(`Generare il programma annuale pulizie per il ${year}?`)) return;
+  const weeks = getCleaningWeeksForYear(year);
+
+  const existingWeeks = await getDocs(query(
+    cleaningWeeksCollection,
+    where('weekStart', '>=', `${year}-01-01`),
+    where('weekStart', '<=', `${year}-12-31`)
+  ));
+  const existingMonthly = await getDocs(query(
+    monthlySuppliesCollection,
+    where('year', '==', year)
+  ));
+
+  const batch = writeBatch(firestore);
+  existingWeeks.forEach(item => batch.delete(item.ref));
+  existingMonthly.forEach(item => batch.delete(item.ref));
+
+  weeks.forEach(week => {
+    batch.set(doc(firestore, 'cleaningWeeks', week.weekStart), week);
+  });
+
+  for (let month = 1; month <= 12; month += 1) {
+    const monthlyId = getMonthSupplyKey(year, month);
+    const congregation = CLEANING_CONGREGATIONS[(month - 1) % CLEANING_CONGREGATIONS.length];
+    batch.set(doc(firestore, 'monthlySupplies', monthlyId), {
+      year,
+      month,
+      supplyCongregation: congregation
+    });
+  }
+
+  await batch.commit();
+}
+
+function renderCleaningTable() {
+  const body = document.getElementById('cleaningTableBody');
+  const controls = document.getElementById('cleaningAdminControls');
+  if (!body || !controls) return;
+
+  controls.style.display = isAdmin ? 'grid' : 'none';
+
+  const rows = cleaningWeeks
+    .slice()
+    .sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
+  const supplyMap = getMonthSupplyMap();
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = '';
+  let currentMonthLabel = '';
+
+  rows.forEach(week => {
+    const weekStartDate = parseLocalDate(week.weekStart);
+    const year = weekStartDate ? weekStartDate.getFullYear() : '';
+    const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
+    const monthLabel = formatCleaningMonthLabel(weekStartDate);
+    const supplyKey = getMonthSupplyKey(year, month);
+    const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
+
+    if (monthLabel && monthLabel !== currentMonthLabel) {
+      currentMonthLabel = monthLabel;
+      const monthRow = document.createElement('tr');
+      monthRow.className = 'cleaning-month-row';
+      monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      body.appendChild(monthRow);
+    }
+
+    const row = document.createElement('tr');
+    if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
+
+    const cleaningCell = isAdmin
+      ? `<select data-role="cleaning" data-id="${week.id}">
+          ${getCleaningCongregationOptions(week.cleaningCongregation)}
+        </select>`
+      : `${week.cleaningCongregation || '-'}`;
+
+    const supplyCell = isAdmin
+      ? `<select data-role="supply" data-year="${year}" data-month="${month}">
+          ${getCleaningCongregationOptions(supplyCongregation)}
+        </select>`
+      : `${supplyCongregation || '-'}`;
+
+    row.innerHTML = `
+      <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
+      <td>${cleaningCell}</td>
+      <td>${supplyCell}</td>
+    `;
+    body.appendChild(row);
+  });
+}
 
 // --- Calendar ---
 const MAX_AVAILABLE_MINUTES = 480; 
@@ -666,9 +957,8 @@ function renderCalendar() {
   const paddingDays = startWeekday - 1; 
   const calendarGrid = document.getElementById('calendar');
   const monthYearDisplay = document.getElementById('monthYearDisplay');
-  const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
-  monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+  monthYearDisplay.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
   while (calendarGrid.children.length > 7) {
       calendarGrid.removeChild(calendarGrid.lastChild);
   }
@@ -1221,6 +1511,36 @@ importFile.addEventListener('change', function(ev){
 const adminSortSelect = document.getElementById('adminSort');
 if (adminSortSelect) {
   adminSortSelect.addEventListener('change', renderAdminList);
+}
+
+const cleaningYearInput = document.getElementById('cleaningYearInput');
+if (cleaningYearInput) cleaningYearInput.value = String(new Date().getFullYear());
+
+const cleaningTableBody = document.getElementById('cleaningTableBody');
+if (cleaningTableBody) {
+  cleaningTableBody.addEventListener('change', async (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLSelectElement)) return;
+    const role = target.getAttribute('data-role');
+
+    if (role === 'cleaning') {
+      const id = target.getAttribute('data-id');
+      await updateCleaningCongregation(id, target.value);
+    }
+
+    if (role === 'supply') {
+      const year = Number(target.getAttribute('data-year'));
+      const month = Number(target.getAttribute('data-month'));
+      if (year && month) {
+        await updateMonthlySupply(year, month, target.value);
+      }
+    }
+  });
+}
+
+const generateCleaningProgramBtn = document.getElementById('generateCleaningProgramBtn');
+if (generateCleaningProgramBtn) {
+  generateCleaningProgramBtn.addEventListener('click', generateCleaningProgramForYear);
 }
 
 // Navigazione calendario
