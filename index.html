@@ -477,7 +477,6 @@ let currentCalendarDate = new Date();
 let isAdmin = false;
 let currentUser = null;
 
-const CLEANUP_MINUTES = 15;
 
 // Nomi giorni (per popup e createdAt)
 const WEEKDAY_NAMES = [
@@ -548,7 +547,7 @@ const timeToMinutes = hm => {
 };
 
 const intervalsOverlap = (s1,e1,s2,e2) => {
-  return !( (e1 + CLEANUP_MINUTES) <= s2 || (e2 + CLEANUP_MINUTES) <= s1 );
+  return !( e1 <= s2 || e2 <= s1 );
 };
 
 const hasConflictRealtime = (candidate, list) => { 
@@ -585,7 +584,7 @@ function getDayStatus(dateStr) {
       const start = timeToMinutes(r.start);
       const end = timeToMinutes(r.end);
       if (start !== null && end !== null && end > start) {
-          totalBookedMinutes += (end - start) + CLEANUP_MINUTES; 
+          totalBookedMinutes += (end - start); 
       }
   }
   if (totalBookedMinutes === 0) return 'free';
