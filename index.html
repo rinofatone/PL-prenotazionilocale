@@ -227,6 +227,39 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     display:grid;
     gap:8px;
 }
+
+/* Pulsanti dimensioni */
+button.small{padding:6px 10px;font-size:13px}
+button.danger{background:#e53935}
+button.danger:hover{background:#b71c1c}
+
+/* Gestione congregazioni in admin */
+#congregationAdminSection{margin-top:16px;border-top:1px solid #eee;padding-top:14px}
+#congregationAdminSection h4{margin:0 0 10px 0;color:var(--accent)}
+.cong-add-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cong-add-row input{flex:1;min-width:140px}
+#congregationAdminList{display:grid;gap:6px}
+.cong-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #eee}
+.cong-item-name{font-weight:600;color:var(--accent)}
+
+/* Mobile – ottimizzazione */
+@media(max-width:600px){
+    header{flex-wrap:wrap;gap:6px;padding:10px 14px}
+    #dateTimeRow{flex-wrap:wrap}
+    #dateTimeRow > div{min-width:120px}
+    .modal-content{padding:14px;margin:8px}
+    #adminModal .modal-content{
+        max-width:calc(100vw - 16px);
+        max-height:calc(100vh - 20px);
+        border-radius:10px;
+        margin:10px auto;
+    }
+    #adminModal .modal-left{max-height:calc(100vh - 60px)}
+    .item .admin-inner-row{flex-wrap:wrap}
+    #adminSort{min-width:unset;width:100%;margin-left:0}
+    .cong-add-row{flex-direction:column}
+    .cong-add-row input,.cong-add-row button{width:100%}
+}
 </style>
 </head>
 <body>
@@ -254,9 +287,6 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
       <label>Congregazione
         <select id="congregation" required>
             <option value="">Seleziona Congregazione</option>
-            <option value="Borgo">Borgo</option>
-            <option value="Sanremo Centro">Sanremo Centro</option>
-            <option value="Sanremo Ovest">Sanremo Ovest</option>
         </select>
       </label>
       
@@ -277,7 +307,7 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
         <input id="description" maxlength="120" placeholder="Breve descrizione dell'uso/incontro">
       </label>
 
-      <div style="display:flex;gap:10px;margin-top:8px;align-items:end">
+      <div id="dateTimeRow" style="display:flex;gap:10px;margin-top:8px;align-items:end">
         <div style="flex:1">
           <label>Data
             <input id="date" type="date" required>
@@ -519,6 +549,17 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
           <button id="logoutAdmin" class="small ghost">Logout</button>
         </div>
         <div id="adminList" style="overflow:auto;display:grid;gap:8px"></div>
+
+        <!-- Gestione Congregazioni -->
+        <div id="congregationAdminSection" class="admin-controls">
+          <h4>🏛️ Gestione Congregazioni</h4>
+          <p class="meta" style="margin:0 0 10px 0">Le congregazioni qui inserite vengono usate nel modulo di prenotazione e nel programma pulizie/approvvigionamento.</p>
+          <div class="cong-add-row">
+            <input id="newCongregationInput" maxlength="80" placeholder="Nome congregazione (es. Sanremo Centro)">
+            <button id="addCongregationBtn" type="button">+ Aggiungi</button>
+          </div>
+          <div id="congregationAdminList"></div>
+        </div>
       </div>
     </div>
     <div class="modal-right"></div>
@@ -533,7 +574,7 @@ import {
   getDatabase, ref, push, onValue, set, remove, child 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import {
-  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, writeBatch, getDocs, where
+  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, writeBatch, getDocs, where, addDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
@@ -559,6 +600,7 @@ const firestore = getFirestore(app);
 const reservationsRef   = ref(db, 'reservations');
 const cleaningWeeksCollection = collection(firestore, 'cleaningWeeks');
 const monthlySuppliesCollection = collection(firestore, 'monthlySupplies');
+const congregationsCollection = collection(firestore, 'congregations');
 
 // --- Firebase Auth ---
 const auth = getAuth(app);
@@ -567,10 +609,11 @@ const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 let currentReservations = [];
 let cleaningWeeks = [];
 let monthlySupplies = [];
+let congregations = [];
 let currentCalendarDate = new Date(); 
 let isAdmin = false;
 let currentUser = null;
-const CLEANING_CONGREGATIONS = ['Sanremo Borgo', 'Sanremo Centro', 'Sanremo Ovest'];
+let CLEANING_CONGREGATIONS = [];
 
 
 // Nomi giorni (per popup e createdAt)
@@ -646,6 +689,14 @@ onSnapshot(monthlySuppliesCollection, snapshot => {
   renderCleaningTable();
 });
 
+onSnapshot(query(congregationsCollection, orderBy('name')), snapshot => {
+  congregations = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  CLEANING_CONGREGATIONS = congregations.map(c => c.name);
+  populateCongregationSelect();
+  renderCongregationAdminList();
+  renderCleaningTable();
+});
+
 // --- Utility ---
 const timeToMinutes = hm => { 
   if(!hm) return null; 
@@ -680,6 +731,57 @@ const formatDateLabel = dateStr => {
       return dateStr; 
   } 
 };
+
+// --- Congregation management ---
+function populateCongregationSelect() {
+  const sel = document.getElementById('congregation');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Seleziona Congregazione</option>';
+  congregations.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = c.name;
+    if (c.name === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function renderCongregationAdminList() {
+  const container = document.getElementById('congregationAdminList');
+  if (!container) return;
+  if (!congregations.length) {
+    container.innerHTML = '<div class="meta">Nessuna congregazione inserita.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  congregations.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'cong-item';
+    item.innerHTML = `
+      <span class="cong-item-name">${c.name}</span>
+      <button type="button" class="small danger" data-cong-id="${c.id}">Rimuovi</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function addCongregation(name) {
+  if (!isAdmin || !name) return;
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  if (congregations.some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+    alert('Congregazione già presente.');
+    return;
+  }
+  await addDoc(congregationsCollection, { name: trimmed });
+}
+
+async function deleteCongregation(id) {
+  if (!isAdmin || !id) return;
+  if (!confirm('Rimuovere questa congregazione?')) return;
+  await deleteDoc(doc(firestore, 'congregations', id));
+}
 
 // --- Pulizie ---
 const parseLocalDate = (dateStr) => {
@@ -1203,7 +1305,7 @@ function renderAdminList(){
     row.innerHTML = `<div class="admin-item-content" style="flex:1">
         <input type="checkbox" data-id="${r.id}" />
         <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:10px">
+            <div class="admin-inner-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 <div class="pill">${formatDateLabel(r.date)}</div>
                 <strong style="color:var(--accent)">${r.name}${congregationDisplay}</strong>
                 <div class="meta">• ${r.phone}</div>
@@ -1542,6 +1644,28 @@ const generateCleaningProgramBtn = document.getElementById('generateCleaningProg
 if (generateCleaningProgramBtn) {
   generateCleaningProgramBtn.addEventListener('click', generateCleaningProgramForYear);
 }
+
+// Congregation admin
+document.getElementById('addCongregationBtn').addEventListener('click', async () => {
+  const input = document.getElementById('newCongregationInput');
+  await addCongregation(input.value);
+  input.value = '';
+});
+
+document.getElementById('newCongregationInput').addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const input = document.getElementById('newCongregationInput');
+    await addCongregation(input.value);
+    input.value = '';
+  }
+});
+
+document.getElementById('congregationAdminList').addEventListener('click', (e) => {
+  if (e.target.matches('button[data-cong-id]')) {
+    deleteCongregation(e.target.getAttribute('data-cong-id'));
+  }
+});
 
 // Navigazione calendario
 document.getElementById('prevMonth').addEventListener('click', () => {
