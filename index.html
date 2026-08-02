@@ -26,6 +26,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:14p
 .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#7b3f00,#c07a2a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
 .container{max-width:1100px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:1fr 420px;gap:20px}
 @media(max-width:900px){.container{grid-template-columns:1fr}}
+.side-column{display:flex;flex-direction:column;gap:20px}
 .card{background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--card));padding:16px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.04)}
 label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
 input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);font-size:15px}
@@ -167,16 +168,13 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
 }
 
 /* Sezione pulizie */
-.cleaning-card{
-    grid-column: 1 / -1;
-}
 .cleaning-table-wrap{
     overflow:auto;
 }
 .cleaning-table{
     width:100%;
     border-collapse:collapse;
-    min-width:780px;
+    min-width:640px;
 }
 .cleaning-table th,
 .cleaning-table td{
@@ -192,14 +190,26 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     position:sticky;
     top:0;
 }
-.cleaning-row-current{
+.cleaning-month-row td{
+    padding:16px 8px 8px 8px;
+    border-bottom:0;
+    color:var(--accent-light);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+}
+.cleaning-month-row:first-child td{
+    padding-top:0;
+}
+.cleaning-row-current td{
     background:#fff9e6;
 }
 .cleaning-admin-controls{
     margin:10px 0 14px 0;
     display:none;
-    grid-template-columns:repeat(4,minmax(140px,1fr));
+    grid-template-columns:minmax(140px,180px) auto;
     gap:8px;
+    align-items:end;
 }
 .cleaning-admin-controls button{
     white-space:nowrap;
@@ -346,75 +356,71 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     </div>
   </section>
 
-  <aside class="card">
-    <div class="calendar-header">
-        <button id="prevMonth" class="small ghost" style="padding: 5px 10px;">&lt;</button>
-        <div id="monthYearDisplay" class="calendar-title"></div>
-        <button id="nextMonth" class="small ghost" style="padding: 5px 10px;">&gt;</button>
-    </div>
-    <div id="calendar" class="calendar-grid">
-        <div class="calendar-weekday">Lun</div>
-        <div class="calendar-weekday">Mar</div>
-        <div class="calendar-weekday">Mer</div>
-        <div class="calendar-weekday">Gio</div>
-        <div class="calendar-weekday">Ven</div>
-        <div class="calendar-weekday">Sab</div>
-        <div class="calendar-weekday">Dom</div>
-    </div>
-    <div style="margin-top:15px; border-top: 1px solid #eee; padding-top: 10px;">
-        <h4 style="margin:0 0 8px 0; color:var(--accent)">Legenda Occupazione</h4>
-        <div style="display:flex; gap:10px; font-size:13px; flex-wrap: wrap;">
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#e8f5e9; border: 1px solid #a5d6a7; margin-right:5px;"></span> 
-              Libero
-            </div>
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#fff9e6; border: 1px solid #ffcc80; margin-right:5px;"></span> 
-              Parziale
-            </div>
-            <div style="display:flex; align-items:center;">
-              <span style="width:10px; height:10px; border-radius:50%; background-color:#ffebee; border: 1px solid #ef9a9a; margin-right:5px;"></span> 
-              Pieno
-            </div>
-        </div>
-    </div>
-  </aside>
+  <div class="side-column">
+    <aside class="card">
+      <div class="calendar-header">
+          <button id="prevMonth" class="small ghost" style="padding: 5px 10px;">&lt;</button>
+          <div id="monthYearDisplay" class="calendar-title"></div>
+          <button id="nextMonth" class="small ghost" style="padding: 5px 10px;">&gt;</button>
+      </div>
+      <div id="calendar" class="calendar-grid">
+          <div class="calendar-weekday">Lun</div>
+          <div class="calendar-weekday">Mar</div>
+          <div class="calendar-weekday">Mer</div>
+          <div class="calendar-weekday">Gio</div>
+          <div class="calendar-weekday">Ven</div>
+          <div class="calendar-weekday">Sab</div>
+          <div class="calendar-weekday">Dom</div>
+      </div>
+      <div style="margin-top:15px; border-top: 1px solid #eee; padding-top: 10px;">
+          <h4 style="margin:0 0 8px 0; color:var(--accent)">Legenda Occupazione</h4>
+          <div style="display:flex; gap:10px; font-size:13px; flex-wrap: wrap;">
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#e8f5e9; border: 1px solid #a5d6a7; margin-right:5px;"></span> 
+                Libero
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#fff9e6; border: 1px solid #ffcc80; margin-right:5px;"></span> 
+                Parziale
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span style="width:10px; height:10px; border-radius:50%; background-color:#ffebee; border: 1px solid #ef9a9a; margin-right:5px;"></span> 
+                Pieno
+              </div>
+          </div>
+      </div>
+    </aside>
 
-  <section class="card cleaning-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-      <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
-      <div class="meta">Programma annuale Locale Espositori</div>
-    </div>
+    <section class="card cleaning-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
+        <div class="meta">Programma annuale Locale Espositori</div>
+      </div>
 
-    <div id="cleaningAdminControls" class="cleaning-admin-controls">
-      <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
-      <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
-      <input id="newWeekStart" type="date" aria-label="Inizio settimana">
-      <input id="newWeekEnd" type="date" aria-label="Fine settimana">
-      <select id="newWeekCongregation" aria-label="Congregazione pulizie">
-        <option value="Sanremo Borgo">Sanremo Borgo</option>
-        <option value="Sanremo Centro">Sanremo Centro</option>
-        <option value="Sanremo Ovest">Sanremo Ovest</option>
-      </select>
-      <button id="addCleaningWeekBtn" type="button" class="ghost">Aggiungi settimana</button>
-    </div>
+      <div id="cleaningAdminControls" class="cleaning-admin-controls">
+        <label style="margin:0;">
+          Anno programma
+          <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
+        </label>
+        <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
+      </div>
 
-    <div class="cleaning-table-wrap" style="margin-top:8px;">
-      <table class="cleaning-table">
-        <thead>
-          <tr>
-            <th>Settimana</th>
-            <th>Congregazione Pulizie</th>
-            <th>Congregazione Approvvigionamento</th>
-            <th id="cleaningManageHeader" style="display:none;">Gestione</th>
-          </tr>
-        </thead>
-        <tbody id="cleaningTableBody">
-          <tr><td colspan="4" class="meta">Nessun programma pulizie disponibile.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+      <div class="cleaning-table-wrap" style="margin-top:8px;">
+        <table class="cleaning-table">
+          <thead>
+            <tr>
+              <th>Settimana</th>
+              <th>Congregazione Pulizie</th>
+              <th>Congregazione Approvvigionamento</th>
+            </tr>
+          </thead>
+          <tbody id="cleaningTableBody">
+            <tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </main>
 
 <!-- Dettagli prenotazioni dal calendario -->
@@ -527,7 +533,7 @@ import {
   getDatabase, ref, push, onValue, set, remove, child 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import {
-  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, deleteDoc, writeBatch, getDocs, where
+  getFirestore, collection, doc, onSnapshot, query, orderBy, updateDoc, setDoc, writeBatch, getDocs, where
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
@@ -578,6 +584,7 @@ const WEEKDAY_NAMES = [
   'Venerdì',
   'Sabato'
 ];
+const MONTH_NAMES = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
 // Utility formattazione createdAt
 function formatCreatedAt(createdAt) {
@@ -675,22 +682,35 @@ const formatDateLabel = dateStr => {
   } 
 };
 
+// --- Pulizie ---
 const parseLocalDate = (dateStr) => {
   const [y, m, d] = String(dateStr || '').split('-').map(Number);
   if (!y || !m || !d) return null;
   return new Date(y, m - 1, d);
 };
 
-const toISODate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+function getMonthSupplyKey(year, month) {
+  return `${year}-${pad(month)}`;
+}
 
-function getMonthSupplyMap(yearFilter = null) {
+function formatCleaningMonthLabel(date) {
+  if (!date) return '';
+  return `${MONTH_NAMES[date.getMonth()].toUpperCase()} ${date.getFullYear()}`;
+}
+
+function getMonthSupplyMap() {
   const map = new Map();
   monthlySupplies.forEach(item => {
-    if (yearFilter !== null && Number(item.year) !== Number(yearFilter)) return;
-    const key = `${item.year}-${item.month}`;
+    const key = getMonthSupplyKey(item.year, item.month);
     map.set(key, item.supplyCongregation || '');
   });
   return map;
+}
+
+function getCleaningCongregationOptions(selectedValue) {
+  return CLEANING_CONGREGATIONS
+    .map(c => `<option value="${c}" ${c === selectedValue ? 'selected' : ''}>${c}</option>`)
+    .join('');
 }
 
 function isCurrentWeek(weekStart, weekEnd) {
@@ -709,7 +729,7 @@ async function updateCleaningCongregation(weekId, value) {
 
 async function updateMonthlySupply(year, month, value) {
   if (!isAdmin) return;
-  const monthlyId = `${year}-${String(month).padStart(2, '0')}`;
+  const monthlyId = getMonthSupplyKey(year, month);
   await setDoc(doc(firestore, 'monthlySupplies', monthlyId), {
     year: Number(year),
     month: Number(month),
@@ -717,31 +737,31 @@ async function updateMonthlySupply(year, month, value) {
   }, { merge: true });
 }
 
-async function addCleaningWeek() {
-  if (!isAdmin) return;
-  const start = document.getElementById('newWeekStart').value;
-  const end = document.getElementById('newWeekEnd').value;
-  const congregation = document.getElementById('newWeekCongregation').value;
-  const startDate = parseLocalDate(start);
-  const endDate = parseLocalDate(end);
+function getCleaningWeeksForYear(year) {
+  const weeks = [];
+  const lastDayOfYear = new Date(year, 11, 31);
 
-  if (!startDate || !endDate || endDate < startDate) {
-    alert('Inserisci una settimana valida.');
-    return;
+  for (let current = new Date(year, 0, 1); current <= lastDayOfYear;) {
+    const weekStart = formatDateStr(current);
+    const weekEndDate = new Date(current);
+    const daysUntilSunday = weekEndDate.getDay() === 0 ? 0 : 7 - weekEndDate.getDay();
+    weekEndDate.setDate(weekEndDate.getDate() + daysUntilSunday);
+
+    if (weekEndDate > lastDayOfYear) {
+      weekEndDate.setTime(lastDayOfYear.getTime());
+    }
+
+    weeks.push({
+      weekStart,
+      weekEnd: formatDateStr(weekEndDate),
+      cleaningCongregation: CLEANING_CONGREGATIONS[weeks.length % CLEANING_CONGREGATIONS.length]
+    });
+
+    current = new Date(weekEndDate);
+    current.setDate(current.getDate() + 1);
   }
 
-  const weekId = start;
-  await setDoc(doc(firestore, 'cleaningWeeks', weekId), {
-    weekStart: start,
-    weekEnd: end,
-    cleaningCongregation: congregation
-  }, { merge: true });
-}
-
-async function removeCleaningWeek(weekId) {
-  if (!isAdmin || !weekId) return;
-  if (!confirm('Eliminare questa settimana dal programma pulizie?')) return;
-  await deleteDoc(doc(firestore, 'cleaningWeeks', weekId));
+  return weeks;
 }
 
 async function generateCleaningProgramForYear() {
@@ -753,13 +773,7 @@ async function generateCleaningProgramForYear() {
     return;
   }
   if (!confirm(`Generare il programma annuale pulizie per il ${year}?`)) return;
-
-  const jan1 = new Date(year, 0, 1);
-  const dec31 = new Date(year, 11, 31);
-  const start = new Date(jan1);
-  const day = start.getDay();
-  const offset = day === 0 ? 1 : (8 - day);
-  start.setDate(start.getDate() + (day === 1 ? 0 : offset));
+  const weeks = getCleaningWeeksForYear(year);
 
   const existingWeeks = await getDocs(query(
     cleaningWeeksCollection,
@@ -775,24 +789,12 @@ async function generateCleaningProgramForYear() {
   existingWeeks.forEach(item => batch.delete(item.ref));
   existingMonthly.forEach(item => batch.delete(item.ref));
 
-  let idx = 0;
-  for (let current = new Date(start); current <= dec31; current.setDate(current.getDate() + 7)) {
-    const weekStart = toISODate(current);
-    const weekEndDate = new Date(current);
-    weekEndDate.setDate(weekEndDate.getDate() + 6);
-    const weekEnd = toISODate(weekEndDate);
-    const congregation = CLEANING_CONGREGATIONS[idx % CLEANING_CONGREGATIONS.length];
-    idx += 1;
-
-    batch.set(doc(firestore, 'cleaningWeeks', weekStart), {
-      weekStart,
-      weekEnd,
-      cleaningCongregation: congregation
-    });
-  }
+  weeks.forEach(week => {
+    batch.set(doc(firestore, 'cleaningWeeks', week.weekStart), week);
+  });
 
   for (let month = 1; month <= 12; month += 1) {
-    const monthlyId = `${year}-${String(month).padStart(2, '0')}`;
+    const monthlyId = getMonthSupplyKey(year, month);
     const congregation = CLEANING_CONGREGATIONS[(month - 1) % CLEANING_CONGREGATIONS.length];
     batch.set(doc(firestore, 'monthlySupplies', monthlyId), {
       year,
@@ -806,12 +808,10 @@ async function generateCleaningProgramForYear() {
 
 function renderCleaningTable() {
   const body = document.getElementById('cleaningTableBody');
-  const manageHeader = document.getElementById('cleaningManageHeader');
   const controls = document.getElementById('cleaningAdminControls');
-  if (!body || !manageHeader || !controls) return;
+  if (!body || !controls) return;
 
   controls.style.display = isAdmin ? 'grid' : 'none';
-  manageHeader.style.display = isAdmin ? '' : 'none';
 
   const rows = cleaningWeeks
     .slice()
@@ -819,30 +819,41 @@ function renderCleaningTable() {
   const supplyMap = getMonthSupplyMap();
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="${isAdmin ? 4 : 3}" class="meta">Nessun programma pulizie disponibile.</td></tr>`;
+    body.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
     return;
   }
 
   body.innerHTML = '';
-  rows.forEach(week => {
-    const row = document.createElement('tr');
-    if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
+  let currentMonthLabel = '';
 
+  rows.forEach(week => {
     const weekStartDate = parseLocalDate(week.weekStart);
     const year = weekStartDate ? weekStartDate.getFullYear() : '';
     const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
-    const supplyKey = `${year}-${month}`;
+    const monthLabel = formatCleaningMonthLabel(weekStartDate);
+    const supplyKey = getMonthSupplyKey(year, month);
     const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
+
+    if (monthLabel && monthLabel !== currentMonthLabel) {
+      currentMonthLabel = monthLabel;
+      const monthRow = document.createElement('tr');
+      monthRow.className = 'cleaning-month-row';
+      monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      body.appendChild(monthRow);
+    }
+
+    const row = document.createElement('tr');
+    if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
 
     const cleaningCell = isAdmin
       ? `<select data-role="cleaning" data-id="${week.id}">
-          ${CLEANING_CONGREGATIONS.map(c => `<option value="${c}" ${c === week.cleaningCongregation ? 'selected' : ''}>${c}</option>`).join('')}
+          ${getCleaningCongregationOptions(week.cleaningCongregation)}
         </select>`
       : `${week.cleaningCongregation || '-'}`;
 
     const supplyCell = isAdmin
       ? `<select data-role="supply" data-year="${year}" data-month="${month}">
-          ${CLEANING_CONGREGATIONS.map(c => `<option value="${c}" ${c === supplyCongregation ? 'selected' : ''}>${c}</option>`).join('')}
+          ${getCleaningCongregationOptions(supplyCongregation)}
         </select>`
       : `${supplyCongregation || '-'}`;
 
@@ -850,7 +861,6 @@ function renderCleaningTable() {
       <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
       <td>${cleaningCell}</td>
       <td>${supplyCell}</td>
-      ${isAdmin ? `<td><button type="button" class="ghost" data-role="delete-week" data-id="${week.id}">Elimina</button></td>` : ''}
     `;
     body.appendChild(row);
   });
@@ -948,9 +958,8 @@ function renderCalendar() {
   const paddingDays = startWeekday - 1; 
   const calendarGrid = document.getElementById('calendar');
   const monthYearDisplay = document.getElementById('monthYearDisplay');
-  const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
-  monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+  monthYearDisplay.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
   while (calendarGrid.children.length > 7) {
       calendarGrid.removeChild(calendarGrid.lastChild);
   }
@@ -1528,19 +1537,6 @@ if (cleaningTableBody) {
       }
     }
   });
-
-  cleaningTableBody.addEventListener('click', async (e) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-    if (target.getAttribute('data-role') !== 'delete-week') return;
-    const weekId = target.getAttribute('data-id');
-    await removeCleaningWeek(weekId);
-  });
-}
-
-const addCleaningWeekBtn = document.getElementById('addCleaningWeekBtn');
-if (addCleaningWeekBtn) {
-  addCleaningWeekBtn.addEventListener('click', addCleaningWeek);
 }
 
 const generateCleaningProgramBtn = document.getElementById('generateCleaningProgramBtn');
