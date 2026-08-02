@@ -439,23 +439,6 @@ button.danger:hover{background:#b71c1c}
           <div class="calendar-weekday">Sab</div>
           <div class="calendar-weekday">Dom</div>
       </div>
-      <div style="margin-top:15px; border-top: 1px solid #eee; padding-top: 10px;">
-          <h3 style="margin:0 0 8px 0; color:var(--accent)">Legenda Occupazione</h3>
-          <div style="display:flex; gap:10px; font-size:13px; flex-wrap: wrap;">
-              <div style="display:flex; align-items:center;">
-                <span style="width:10px; height:10px; border-radius:50%; background-color:#e8f5e9; border: 1px solid #a5d6a7; margin-right:5px;"></span> 
-                Libero
-              </div>
-              <div style="display:flex; align-items:center;">
-                <span style="width:10px; height:10px; border-radius:50%; background-color:#fff9e6; border: 1px solid #ffcc80; margin-right:5px;"></span> 
-                Parziale
-              </div>
-              <div style="display:flex; align-items:center;">
-                <span style="width:10px; height:10px; border-radius:50%; background-color:#ffebee; border: 1px solid #ef9a9a; margin-right:5px;"></span> 
-                Pieno
-              </div>
-          </div>
-      </div>
     </aside>
 
     <section class="card cleaning-card">
@@ -670,6 +653,31 @@ const congregationsCollection = collection(firestore, 'congregations');
 const auth = getAuth(app);
 const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 
+// Aggiorna la visibilità di adminArea e del form di login in base all'utente autenticato
+function aggiornaPannelloAdmin(user) {
+  currentUser = user;
+  isAdmin = !!user && user.uid === ADMIN_UID;
+
+  const adminArea = document.getElementById('adminArea');
+  const adminLoginWrap = document.getElementById('adminLoginWrap');
+  const adminLogin = document.getElementById('adminLogin');
+  const adminUserInfo = document.getElementById('adminUserInfo');
+
+  if (isAdmin) {
+    if (adminArea) adminArea.style.display = 'block';
+    if (adminLoginWrap) adminLoginWrap.style.display = 'none';
+    if (adminLogin) adminLogin.style.display = 'none';
+    if (adminUserInfo && user) {
+      adminUserInfo.textContent = `Loggato come: ${user.email || user.uid}`;
+    }
+  } else {
+    if (adminArea) adminArea.style.display = 'none';
+    if (adminLoginWrap) adminLoginWrap.style.display = 'block';
+    if (adminLogin) adminLogin.style.display = 'block';
+    if (adminUserInfo) adminUserInfo.textContent = '';
+  }
+}
+
 // Gestisce il risultato del redirect Google al caricamento della pagina
 getRedirectResult(auth).then((result) => {
   if (!result) return;
@@ -678,13 +686,14 @@ getRedirectResult(auth).then((result) => {
     if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
     signOut(auth).catch(err => console.error('Errore logout:', err));
   } else {
-    // Redirect avvenuto con successo: apri il modale per mostrare l'area admin
+    // Redirect avvenuto con successo: apri il modale e mostra l'area admin
     const modal = document.getElementById('adminModal');
     if (modal) {
       modal.classList.add('show');
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
     }
+    aggiornaPannelloAdmin(result.user);
   }
 }).catch(err => {
   console.error('Errore redirect Google:', err);
@@ -729,28 +738,7 @@ function formatCreatedAt(createdAt) {
 
 // Rileva cambio stato autenticazione
 onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  isAdmin = !!user && user.uid === ADMIN_UID;
-
-  const adminArea = document.getElementById('adminArea');
-  const adminLoginWrap = document.getElementById('adminLoginWrap');
-  const adminLogin = document.getElementById('adminLogin');
-  const adminUserInfo = document.getElementById('adminUserInfo');
-
-  if (isAdmin) {
-    if (adminArea) adminArea.style.display = 'block';
-    if (adminLoginWrap) adminLoginWrap.style.display = 'none';
-    if (adminLogin) adminLogin.style.display = 'none';
-    if (adminUserInfo && user) {
-      adminUserInfo.textContent = `Loggato come: ${user.email || user.uid}`;
-    }
-  } else {
-    if (adminArea) adminArea.style.display = 'none';
-    if (adminLoginWrap) adminLoginWrap.style.display = 'block';
-    if (adminLogin) adminLogin.style.display = 'block';
-    if (adminUserInfo) adminUserInfo.textContent = '';
-  }
-
+  aggiornaPannelloAdmin(user);
   renderAdminList();
   renderCleaningTable();
 });
@@ -1018,9 +1006,17 @@ function renderCleaningTable() {
     return;
   }
 
-  let currentMonthLabel = '';
+  // Visualizzazione pubblica: sole 4 settimane a partire da quella in corso (o la prima futura)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let publicStartIdx = rows.findIndex(w => { const e = parseLocalDate(w.weekEnd); return e && e >= today; });
+  if (publicStartIdx < 0) publicStartIdx = rows.length;
+  const publicRows = rows.slice(publicStartIdx, publicStartIdx + 4);
 
-  rows.forEach(week => {
+  let currentMonthLabel = '';
+  let adminMonthLabel = '';
+
+  publicRows.forEach(week => {
     const weekStartDate = parseLocalDate(week.weekStart);
     const year = weekStartDate ? weekStartDate.getFullYear() : '';
     const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
@@ -1035,11 +1031,6 @@ function renderCleaningTable() {
       monthRow.className = 'cleaning-month-row';
       monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
       body.appendChild(monthRow);
-
-      const adminMonthRow = document.createElement('tr');
-      adminMonthRow.className = 'cleaning-month-row';
-      adminMonthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
-      adminBody.appendChild(adminMonthRow);
 
       const cardMonthTitle = document.createElement('div');
       cardMonthTitle.className = 'cleaning-card-header';
@@ -1072,6 +1063,25 @@ function renderCleaningTable() {
       </div>
     `;
     cardsContainer.appendChild(card);
+  });
+
+  // Tabella admin: tutte le settimane
+  rows.forEach(week => {
+    const weekStartDate = parseLocalDate(week.weekStart);
+    const year = weekStartDate ? weekStartDate.getFullYear() : '';
+    const month = weekStartDate ? weekStartDate.getMonth() + 1 : '';
+    const monthLabel = formatCleaningMonthLabel(weekStartDate);
+    const supplyKey = getMonthSupplyKey(year, month);
+    const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
+
+    if (monthLabel && monthLabel !== adminMonthLabel) {
+      adminMonthLabel = monthLabel;
+
+      const adminMonthRow = document.createElement('tr');
+      adminMonthRow.className = 'cleaning-month-row';
+      adminMonthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      adminBody.appendChild(adminMonthRow);
+    }
 
     const adminRow = document.createElement('tr');
     if (isCurrentWeek(week.weekStart, week.weekEnd)) adminRow.classList.add('cleaning-row-current');
