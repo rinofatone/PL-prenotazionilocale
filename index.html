@@ -204,15 +204,52 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
 .cleaning-row-current td{
     background:#fff9e6;
 }
+.cleaning-public-cards{
+    display:none;
+    margin-top:8px;
+    gap:10px;
+}
+.cleaning-card-item{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:10px;
+    padding:10px;
+}
+.cleaning-card-item.current{
+    background:#fff9e6;
+}
+.cleaning-card-header{
+    font-size:12px;
+    font-weight:700;
+    color:var(--accent-light);
+    letter-spacing:.08em;
+    margin-bottom:6px;
+}
+.cleaning-card-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:14px;
+    padding:4px 0;
+}
+.cleaning-card-label{
+    color:var(--muted);
+}
+.cleaning-admin-section{
+    margin-top:16px;
+}
 .cleaning-admin-controls{
     margin:10px 0 14px 0;
-    display:none;
+    display:grid;
     grid-template-columns:minmax(140px,180px) auto;
     gap:8px;
     align-items:end;
 }
 .cleaning-admin-controls button{
     white-space:nowrap;
+}
+.cleaning-admin-table-wrap{
+    overflow:auto;
 }
 @media(max-width:900px){
     .cleaning-admin-controls{
@@ -259,6 +296,8 @@ button.danger:hover{background:#b71c1c}
     #adminSort{min-width:unset;width:100%;margin-left:0}
     .cong-add-row{flex-direction:column}
     .cong-add-row input,.cong-add-row button{width:100%}
+    .cleaning-public-table{display:none}
+    .cleaning-public-cards{display:grid}
 }
 </style>
 </head>
@@ -427,15 +466,7 @@ button.danger:hover{background:#b71c1c}
         <div class="meta">Programma annuale Locale Espositori</div>
       </div>
 
-      <div id="cleaningAdminControls" class="cleaning-admin-controls">
-        <label style="margin:0;">
-          Anno programma
-          <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
-        </label>
-        <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
-      </div>
-
-      <div class="cleaning-table-wrap" style="margin-top:8px;">
+      <div class="cleaning-table-wrap cleaning-public-table" style="margin-top:8px;">
         <table class="cleaning-table">
           <thead>
             <tr>
@@ -448,6 +479,11 @@ button.danger:hover{background:#b71c1c}
             <tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>
           </tbody>
         </table>
+      </div>
+      <div id="cleaningCardsContainer" class="cleaning-public-cards">
+        <div class="cleaning-card-item">
+          <div class="meta">Nessun programma pulizie disponibile.</div>
+        </div>
       </div>
     </section>
   </div>
@@ -559,6 +595,31 @@ button.danger:hover{background:#b71c1c}
             <button id="addCongregationBtn" type="button">+ Aggiungi</button>
           </div>
           <div id="congregationAdminList"></div>
+        </div>
+
+        <div id="cleaningProgramAdminSection" class="admin-controls cleaning-admin-section">
+          <h4>🧹 Gestione Programma Pulizie</h4>
+          <div class="cleaning-admin-controls">
+            <label style="margin:0;">
+              Anno del programma
+              <input id="cleaningYearInput" type="number" min="2020" max="2100" placeholder="Anno programma">
+            </label>
+            <button id="generateCleaningProgramBtn" type="button">Genera programma annuale</button>
+          </div>
+          <div class="cleaning-admin-table-wrap">
+            <table class="cleaning-table">
+              <thead>
+                <tr>
+                  <th>Settimana</th>
+                  <th>Congregazione Pulizie</th>
+                  <th>Congregazione Approvvigionamento</th>
+                </tr>
+              </thead>
+              <tbody id="cleaningAdminTableBody">
+                <tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -909,22 +970,26 @@ async function generateCleaningProgramForYear() {
 
 function renderCleaningTable() {
   const body = document.getElementById('cleaningTableBody');
-  const controls = document.getElementById('cleaningAdminControls');
-  if (!body || !controls) return;
-
-  controls.style.display = isAdmin ? 'grid' : 'none';
+  const cardsContainer = document.getElementById('cleaningCardsContainer');
+  const adminBody = document.getElementById('cleaningAdminTableBody');
+  if (!body || !cardsContainer || !adminBody) return;
 
   const rows = cleaningWeeks
     .slice()
     .sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
   const supplyMap = getMonthSupplyMap();
 
+  body.innerHTML = '';
+  cardsContainer.innerHTML = '';
+  adminBody.innerHTML = '';
+
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
+    cardsContainer.innerHTML = '<div class="cleaning-card-item"><div class="meta">Nessun programma pulizie disponibile.</div></div>';
+    adminBody.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
     return;
   }
 
-  body.innerHTML = '';
   let currentMonthLabel = '';
 
   rows.forEach(week => {
@@ -937,33 +1002,65 @@ function renderCleaningTable() {
 
     if (monthLabel && monthLabel !== currentMonthLabel) {
       currentMonthLabel = monthLabel;
+
       const monthRow = document.createElement('tr');
       monthRow.className = 'cleaning-month-row';
       monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
       body.appendChild(monthRow);
+
+      const adminMonthRow = document.createElement('tr');
+      adminMonthRow.className = 'cleaning-month-row';
+      adminMonthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      adminBody.appendChild(adminMonthRow);
+
+      const cardMonthTitle = document.createElement('div');
+      cardMonthTitle.className = 'cleaning-card-header';
+      cardMonthTitle.textContent = monthLabel;
+      cardsContainer.appendChild(cardMonthTitle);
     }
 
     const row = document.createElement('tr');
     if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
-
-    const cleaningCell = isAdmin
-      ? `<select data-role="cleaning" data-id="${week.id}">
-          ${getCleaningCongregationOptions(week.cleaningCongregation)}
-        </select>`
-      : `${week.cleaningCongregation || '-'}`;
-
-    const supplyCell = isAdmin
-      ? `<select data-role="supply" data-year="${year}" data-month="${month}">
-          ${getCleaningCongregationOptions(supplyCongregation)}
-        </select>`
-      : `${supplyCongregation || '-'}`;
-
     row.innerHTML = `
       <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
-      <td>${cleaningCell}</td>
-      <td>${supplyCell}</td>
+      <td>${week.cleaningCongregation || '-'}</td>
+      <td>${supplyCongregation || '-'}</td>
     `;
     body.appendChild(row);
+
+    const card = document.createElement('div');
+    card.className = 'cleaning-card-item' + (isCurrentWeek(week.weekStart, week.weekEnd) ? ' current' : '');
+    card.innerHTML = `
+      <div class="cleaning-card-row">
+        <strong>${formatDateLabel(week.weekStart)} — ${formatDateLabel(week.weekEnd)}</strong>
+      </div>
+      <div class="cleaning-card-row">
+        <span class="cleaning-card-label">Congregazione Pulizie</span>
+        <span>${week.cleaningCongregation || '-'}</span>
+      </div>
+      <div class="cleaning-card-row">
+        <span class="cleaning-card-label">Congregazione Approvvigionamento</span>
+        <span>${supplyCongregation || '-'}</span>
+      </div>
+    `;
+    cardsContainer.appendChild(card);
+
+    const adminRow = document.createElement('tr');
+    if (isCurrentWeek(week.weekStart, week.weekEnd)) adminRow.classList.add('cleaning-row-current');
+    adminRow.innerHTML = `
+      <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
+      <td>
+        <select data-role="cleaning" data-id="${week.id}">
+          ${getCleaningCongregationOptions(week.cleaningCongregation)}
+        </select>
+      </td>
+      <td>
+        <select data-role="supply" data-year="${year}" data-month="${month}">
+          ${getCleaningCongregationOptions(supplyCongregation)}
+        </select>
+      </td>
+    `;
+    adminBody.appendChild(adminRow);
   });
 }
 
@@ -1618,9 +1715,9 @@ if (adminSortSelect) {
 const cleaningYearInput = document.getElementById('cleaningYearInput');
 if (cleaningYearInput) cleaningYearInput.value = String(new Date().getFullYear());
 
-const cleaningTableBody = document.getElementById('cleaningTableBody');
-if (cleaningTableBody) {
-  cleaningTableBody.addEventListener('change', async (e) => {
+const cleaningAdminTableBody = document.getElementById('cleaningAdminTableBody');
+if (cleaningAdminTableBody) {
+  cleaningAdminTableBody.addEventListener('change', async (e) => {
     const target = e.target;
     if (!(target instanceof HTMLSelectElement)) return;
     const role = target.getAttribute('data-role');
