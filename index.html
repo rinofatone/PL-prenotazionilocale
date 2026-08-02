@@ -107,22 +107,50 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
 .calendar-day:hover:not(.is-full) {
     background-color: #f0f0f0;
 }
+.calendar-legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+.calendar-legend-item{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--muted);
+}
+.calendar-legend-dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    border:1px solid transparent;
+}
 /* Legend Colors */
 .is-free {
     background-color: #e8f5e9;
     border: 1px solid #a5d6a7;
     color: var(--accent);
 }
+.calendar-legend-dot.is-free{
+    color:transparent;
+}
 .is-partial {
     background-color: #fff9e6;
     border: 1px solid #ffcc80;
     color: #b37400;
+}
+.calendar-legend-dot.is-partial{
+    color:transparent;
 }
 .is-full {
     background-color: #ffebee;
     border: 1px solid #ef9a9a;
     color: var(--danger);
     cursor: not-allowed;
+}
+.calendar-legend-dot.is-full{
+    color:transparent;
 }
 /* Admin Area specific styles */
 .admin-controls {
@@ -467,6 +495,11 @@ button.danger:hover{background:#b71c1c}
           <div class="calendar-weekday">Ven</div>
           <div class="calendar-weekday">Sab</div>
           <div class="calendar-weekday">Dom</div>
+      </div>
+      <div class="calendar-legend" aria-label="Legenda disponibilità calendario">
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-free"></span>libero</span>
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-partial"></span>parz.</span>
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-full"></span>piena</span>
       </div>
     </aside>
 
