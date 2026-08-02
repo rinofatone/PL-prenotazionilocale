@@ -677,6 +677,14 @@ getRedirectResult(auth).then((result) => {
     const adminLoginError = document.getElementById('adminLoginError');
     if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
     signOut(auth).catch(err => console.error('Errore logout:', err));
+  } else {
+    // Redirect avvenuto con successo: apri il modale per mostrare l'area admin
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+    }
   }
 }).catch(err => {
   console.error('Errore redirect Google:', err);
