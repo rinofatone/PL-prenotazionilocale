@@ -641,7 +641,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
-  GoogleAuthProvider, signInWithPopup
+  GoogleAuthProvider, signInWithRedirect, getRedirectResult
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 // AVVISO CONSOLE ANTI-USO NON AUTORIZZATO
@@ -669,6 +669,20 @@ const congregationsCollection = collection(firestore, 'congregations');
 // --- Firebase Auth ---
 const auth = getAuth(app);
 const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
+
+// Gestisce il risultato del redirect Google al caricamento della pagina
+getRedirectResult(auth).then((result) => {
+  if (!result) return;
+  if (result.user.uid !== ADMIN_UID) {
+    const adminLoginError = document.getElementById('adminLoginError');
+    if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
+    signOut(auth).catch(err => console.error('Errore logout:', err));
+  }
+}).catch(err => {
+  console.error('Errore redirect Google:', err);
+  const adminLoginError = document.getElementById('adminLoginError');
+  if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
+});
 
 let currentReservations = [];
 let cleaningWeeks = [];
@@ -1693,17 +1707,10 @@ adminLogin.addEventListener('submit', (e) => {
 document.getElementById('googleLoginBtn').addEventListener('click', () => {
   if (adminLoginError) adminLoginError.textContent = '';
   const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      if (result.user.uid !== ADMIN_UID) {
-        if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
-        signOut(auth).catch(err => console.error('Errore logout:', err));
-      }
-    })
-    .catch(err => {
-      console.error('Errore login Google:', err);
-      if (adminLoginError) adminLoginError.textContent = 'Accesso con Google non riuscito.';
-    });
+  signInWithRedirect(auth, provider).catch(err => {
+    console.error('Errore login Google:', err);
+    if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
+  });
 });
 
 document.getElementById('logoutAdmin').addEventListener('click', ()=> { 
