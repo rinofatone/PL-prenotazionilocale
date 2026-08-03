@@ -193,7 +193,7 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     color: var(--muted);
 }
 
-/* Sezione pulizie */
+/* ===================== Sezione Pulizie ===================== */
 .cleaning-table-wrap{
     overflow:hidden;
 }
@@ -203,11 +203,14 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     table-layout:fixed;
 }
 .cleaning-table col.cleaning-col-week{
-    width:35%;
+    width:45%;
 }
 .cleaning-table col.cleaning-col-cleaning,
 .cleaning-table col.cleaning-col-supply{
-    width:32.5%;
+    width:25%;
+}
+.cleaning-table col.cleaning-col-supply{
+    width:30%;
 }
 .cleaning-table th,
 .cleaning-table td{
@@ -224,9 +227,6 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     position:sticky;
     top:0;
     font-weight:700;
-}
-.cleaning-table th .th-short{
-    display:none;
 }
 .cleaning-table td:first-child,
 .cleaning-table th:first-child{
@@ -257,7 +257,8 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     background:#fff;
     border:1px solid #eee;
     border-radius:10px;
-    padding:10px;
+    padding:10px 12px;
+    box-shadow:0 6px 14px rgba(0,0,0,0.04);
 }
 .cleaning-card-item.current{
     background:#fff9e6;
@@ -340,20 +341,30 @@ button.danger:hover{background:#b71c1c}
     #adminSort{min-width:unset;width:100%;margin-left:0}
     .cong-add-row{flex-direction:column}
     .cong-add-row input,.cong-add-row button{width:100%}
-    .cleaning-public-table{display:block}
-    .cleaning-public-cards{display:none}
-    .cleaning-table th,
-    .cleaning-table td{
-        padding:7px 5px;
-        font-size:13px;
+}
+@media(max-width:767px){
+    .cleaning-public-table{display:none}
+    .cleaning-public-cards{display:grid}
+    .cleaning-card-header{margin-top:6px}
+    .cleaning-card-row{
+        justify-content:flex-start;
+        align-items:center;
+        gap:8px;
+        padding:5px 0;
     }
-    .cleaning-table th .th-full{
+    .cleaning-card-row .cleaning-card-label{
         display:none;
     }
-    .cleaning-table th .th-short{
-        display:inline;
+    .cleaning-card-row:nth-child(2)::before{
+        content:"🧹";
+        line-height:1;
+    }
+    .cleaning-card-row:nth-child(3)::before{
+        content:"📦";
+        line-height:1;
     }
 }
+/* =================== /Sezione Pulizie =================== */
 </style>
 </head>
 <body>
@@ -505,8 +516,7 @@ button.danger:hover{background:#b71c1c}
 
     <section class="card cleaning-card">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-        <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
-        <div class="meta">Programma annuale Locale Espositori</div>
+        <h2 style="margin:0;color:var(--accent)">🧹 Pulizie</h2>
       </div>
 
       <div class="cleaning-table-wrap cleaning-public-table" style="margin-top:8px;">
@@ -519,8 +529,8 @@ button.danger:hover{background:#b71c1c}
           <thead>
             <tr>
               <th>Settimana</th>
-              <th><span class="th-full">Pulizie</span><span class="th-short">Pulizie</span></th>
-              <th><span class="th-full">Approvvigionamento</span><span class="th-short">Approvv.</span></th>
+              <th>Pulizie</th>
+              <th>Approvv.</th>
             </tr>
           </thead>
           <tbody id="cleaningTableBody">
@@ -668,8 +678,8 @@ button.danger:hover{background:#b71c1c}
               <thead>
                 <tr>
                   <th>Settimana</th>
-                  <th><span class="th-full">Pulizie</span><span class="th-short">Pulizie</span></th>
-                  <th><span class="th-full">Approvvigionamento</span><span class="th-short">Approvv.</span></th>
+                  <th>Pulizie</th>
+                  <th>Approvv.</th>
                 </tr>
               </thead>
               <tbody id="cleaningAdminTableBody">
