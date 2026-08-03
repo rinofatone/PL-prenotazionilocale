@@ -818,6 +818,12 @@ function aggiornaPannelloAdmin(user) {
 
 // Gestisce il risultato del redirect Google al caricamento della pagina
 getRedirectResult(auth).then((result) => {
+  console.log("Parametro user:", result?.user);
+  console.log("auth.currentUser:", auth.currentUser);
+  console.log("UID currentUser:", auth.currentUser?.uid);
+  console.log("Email currentUser:", auth.currentUser?.email);
+  console.log("ADMIN_UID:", ADMIN_UID);
+  console.log("isAdmin:", isAdmin);
   if (!result) return;
   if (result.user.uid !== ADMIN_UID) {
     const adminLoginError = document.getElementById('adminLoginError');
@@ -876,6 +882,12 @@ function formatCreatedAt(createdAt) {
 
 // Rileva cambio stato autenticazione
 onAuthStateChanged(auth, (user) => {
+  console.log("Parametro user:", user);
+  console.log("auth.currentUser:", auth.currentUser);
+  console.log("UID currentUser:", auth.currentUser?.uid);
+  console.log("Email currentUser:", auth.currentUser?.email);
+  console.log("ADMIN_UID:", ADMIN_UID);
+  console.log("isAdmin:", isAdmin);
   aggiornaPannelloAdmin(user);
   renderAdminList();
   renderCleaningTable();
