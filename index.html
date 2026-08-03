@@ -790,6 +790,11 @@ function aggiornaPannelloAdmin(user) {
   currentUser = user;
   isAdmin = !!user && user.uid === ADMIN_UID;
 
+  console.log("UID autenticato:", user?.uid);
+  console.log("ADMIN_UID:", ADMIN_UID);
+  console.log("Coincidono?", user?.uid === ADMIN_UID);
+  console.log("isAdmin:", isAdmin);
+
   const adminArea = document.getElementById('adminArea');
   const adminLoginWrap = document.getElementById('adminLoginWrap');
   const adminLogin = document.getElementById('adminLogin');
