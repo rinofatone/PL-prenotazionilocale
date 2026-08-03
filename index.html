@@ -107,22 +107,50 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
 .calendar-day:hover:not(.is-full) {
     background-color: #f0f0f0;
 }
+.calendar-legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+.calendar-legend-item{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--muted);
+}
+.calendar-legend-dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    border:1px solid transparent;
+}
 /* Legend Colors */
 .is-free {
     background-color: #e8f5e9;
     border: 1px solid #a5d6a7;
     color: var(--accent);
 }
+.calendar-legend-dot.is-free{
+    color:transparent;
+}
 .is-partial {
     background-color: #fff9e6;
     border: 1px solid #ffcc80;
     color: #b37400;
+}
+.calendar-legend-dot.is-partial{
+    color:transparent;
 }
 .is-full {
     background-color: #ffebee;
     border: 1px solid #ef9a9a;
     color: var(--danger);
     cursor: not-allowed;
+}
+.calendar-legend-dot.is-full{
+    color:transparent;
 }
 /* Admin Area specific styles */
 .admin-controls {
@@ -165,53 +193,137 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
     color: var(--muted);
 }
 
-/* Sezione pulizie */
-.cleaning-table-wrap{
-    overflow:auto;
-}
+/* ===================== Sezione Pulizie ===================== */
 .cleaning-table{
     width:100%;
     border-collapse:collapse;
-    min-width:640px;
+    table-layout:fixed;
+}
+.cleaning-table col.cleaning-col-week{
+    width:52%;
+}
+.cleaning-table col.cleaning-col-cleaning{
+    width:48%;
 }
 .cleaning-table th,
 .cleaning-table td{
     border-bottom:1px solid #eee;
-    padding:10px 8px;
+    padding:8px 6px;
     text-align:left;
     font-size:14px;
     vertical-align:middle;
+    word-break:break-word;
 }
 .cleaning-table th{
     color:var(--accent);
     background:rgba(123,63,0,0.04);
     position:sticky;
     top:0;
-}
-.cleaning-month-row td{
-    padding:16px 8px 8px 8px;
-    border-bottom:0;
-    color:var(--accent-light);
-    font-size:12px;
     font-weight:700;
-    letter-spacing:.08em;
+}
+.cleaning-table td:first-child,
+.cleaning-table th:first-child{
+    white-space:nowrap;
+}
+
+/* Month separator row */
+.cleaning-month-row td{
+    padding:18px 0 6px;
+    border-bottom:0;
+    background:none;
 }
 .cleaning-month-row:first-child td{
-    padding-top:0;
+    padding-top:8px;
 }
+.cleaning-month-label{
+    position:relative;
+    text-align:center;
+    color:var(--accent);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:4px 44px;
+}
+.cleaning-month-label::before,
+.cleaning-month-label::after{
+    content:'';
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:32%;
+    height:1px;
+    background:var(--accent-light);
+    opacity:.35;
+}
+.cleaning-month-label::before{left:0}
+.cleaning-month-label::after{right:0}
+
+/* Supply card row (once per month, below month header) */
+.cleaning-supply-card-row td{
+    padding:4px 0 10px;
+    border-bottom:0;
+    background:none;
+}
+.cleaning-supply-month-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(192,122,42,0.07);
+    border:1px solid rgba(192,122,42,0.2);
+    border-radius:10px;
+    padding:10px 14px;
+}
+.cleaning-supply-month-icon{
+    font-size:20px;
+    line-height:1;
+    flex-shrink:0;
+}
+.cleaning-supply-month-info{
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+}
+.cleaning-supply-month-label{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:600;
+}
+.cleaning-supply-month-value{
+    font-size:15px;
+    color:var(--accent);
+    font-weight:700;
+}
+
+/* Congregation badge in table cells */
+.congregation-badge{
+    display:inline-block;
+    padding:3px 10px 3px 6px;
+    border-radius:20px;
+    font-weight:700;
+    font-size:13px;
+    background:rgba(192,122,42,0.08);
+    color:var(--accent);
+    white-space:nowrap;
+}
+
+/* Current week highlight */
 .cleaning-row-current td{
     background:#fff9e6;
 }
+
+/* Cards container (hidden – table used on all sizes) */
 .cleaning-public-cards{
     display:none;
-    margin-top:8px;
-    gap:10px;
 }
 .cleaning-card-item{
     background:#fff;
     border:1px solid #eee;
     border-radius:10px;
-    padding:10px;
+    padding:10px 12px;
+    box-shadow:0 6px 14px rgba(0,0,0,0.04);
 }
 .cleaning-card-item.current{
     background:#fff9e6;
@@ -233,6 +345,7 @@ button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,
 .cleaning-card-label{
     color:var(--muted);
 }
+
 .cleaning-admin-section{
     margin-top:16px;
 }
@@ -294,9 +407,16 @@ button.danger:hover{background:#b71c1c}
     #adminSort{min-width:unset;width:100%;margin-left:0}
     .cong-add-row{flex-direction:column}
     .cong-add-row input,.cong-add-row button{width:100%}
-    .cleaning-public-table{display:none}
-    .cleaning-public-cards{display:grid}
+    /* Mobile: allow date to wrap, prevent horizontal scroll */
+    .cleaning-table td:first-child,
+    .cleaning-table th:first-child{
+        white-space:normal;
+    }
+    .cleaning-public-table{
+        overflow-x:hidden;
+    }
 }
+/* =================== /Sezione Pulizie =================== */
 </style>
 </head>
 <body>
@@ -439,25 +559,32 @@ button.danger:hover{background:#b71c1c}
           <div class="calendar-weekday">Sab</div>
           <div class="calendar-weekday">Dom</div>
       </div>
+      <div class="calendar-legend" aria-label="Legenda disponibilità calendario">
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-free"></span>libero</span>
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-partial"></span>parz.</span>
+        <span class="calendar-legend-item"><span class="calendar-legend-dot is-full"></span>piena</span>
+      </div>
     </aside>
 
     <section class="card cleaning-card">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-        <h2 style="margin:0;color:var(--accent)">Pulizie</h2>
-        <div class="meta">Programma annuale Locale Espositori</div>
+        <h2 style="margin:0;color:var(--accent)">🧹 Pulizie</h2>
       </div>
 
-      <div class="cleaning-table-wrap cleaning-public-table" style="margin-top:8px;">
+      <div class="cleaning-public-table" style="margin-top:8px;">
         <table class="cleaning-table">
+          <colgroup>
+            <col class="cleaning-col-week">
+            <col class="cleaning-col-cleaning">
+          </colgroup>
           <thead>
             <tr>
               <th>Settimana</th>
-              <th>Congregazione Pulizie</th>
-              <th>Congregazione Approvvigionamento</th>
+              <th>Pulizie</th>
             </tr>
           </thead>
           <tbody id="cleaningTableBody">
-            <tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>
+            <tr><td colspan="2" class="meta">Nessun programma pulizie disponibile.</td></tr>
           </tbody>
         </table>
       </div>
@@ -593,11 +720,16 @@ button.danger:hover{background:#b71c1c}
           </div>
           <div class="cleaning-admin-table-wrap">
             <table class="cleaning-table">
+              <colgroup>
+                <col class="cleaning-col-week">
+                <col class="cleaning-col-cleaning">
+                <col class="cleaning-col-supply">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Settimana</th>
-                  <th>Congregazione Pulizie</th>
-                  <th>Congregazione Approvvigionamento</th>
+                  <th>Pulizie</th>
+                  <th>Approvv.</th>
                 </tr>
               </thead>
               <tbody id="cleaningAdminTableBody">
@@ -1000,7 +1132,7 @@ function renderCleaningTable() {
   adminBody.innerHTML = '';
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
+    body.innerHTML = '<tr><td colspan="2" class="meta">Nessun programma pulizie disponibile.</td></tr>';
     cardsContainer.innerHTML = '<div class="cleaning-card-item"><div class="meta">Nessun programma pulizie disponibile.</div></div>';
     adminBody.innerHTML = '<tr><td colspan="3" class="meta">Nessun programma pulizie disponibile.</td></tr>';
     return;
@@ -1013,8 +1145,12 @@ function renderCleaningTable() {
   if (publicStartIdx < 0) publicStartIdx = rows.length;
   const publicRows = rows.slice(publicStartIdx, publicStartIdx + 4);
 
+  // Colored badge circles assigned by congregation index (display only)
+  const BADGE_CIRCLES = ['🟢', '🔵', '🟠', '🟣', '🔴', '🟡', '🟤'];
+
   let currentMonthLabel = '';
   let adminMonthLabel = '';
+  let pendingSupplyCardRow = null;
 
   publicRows.forEach(week => {
     const weekStartDate = parseLocalDate(week.weekStart);
@@ -1025,12 +1161,32 @@ function renderCleaningTable() {
     const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
 
     if (monthLabel && monthLabel !== currentMonthLabel) {
+      if (pendingSupplyCardRow) {
+        body.appendChild(pendingSupplyCardRow);
+        pendingSupplyCardRow = null;
+      }
+
       currentMonthLabel = monthLabel;
 
       const monthRow = document.createElement('tr');
       monthRow.className = 'cleaning-month-row';
-      monthRow.innerHTML = '<td colspan="3">' + monthLabel + '</td>';
+      monthRow.innerHTML = '<td colspan="2"><div class="cleaning-month-label">' + monthLabel + '</div></td>';
       body.appendChild(monthRow);
+
+      const supplyCardRow = document.createElement('tr');
+      supplyCardRow.className = 'cleaning-supply-card-row';
+      supplyCardRow.innerHTML = `
+        <td colspan="2">
+          <div class="cleaning-supply-month-card">
+            <span class="cleaning-supply-month-icon">📦</span>
+            <div class="cleaning-supply-month-info">
+              <span class="cleaning-supply-month-label">Approvvigionamento del mese</span>
+              <strong class="cleaning-supply-month-value">${supplyCongregation || '-'}</strong>
+            </div>
+          </div>
+        </td>
+      `;
+      pendingSupplyCardRow = supplyCardRow;
 
       const cardMonthTitle = document.createElement('div');
       cardMonthTitle.className = 'cleaning-card-header';
@@ -1038,12 +1194,14 @@ function renderCleaningTable() {
       cardsContainer.appendChild(cardMonthTitle);
     }
 
+    const cidx = CLEANING_CONGREGATIONS.indexOf(week.cleaningCongregation);
+    const circle = cidx >= 0 ? BADGE_CIRCLES[cidx % BADGE_CIRCLES.length] : '';
+
     const row = document.createElement('tr');
     if (isCurrentWeek(week.weekStart, week.weekEnd)) row.classList.add('cleaning-row-current');
     row.innerHTML = `
       <td><strong>${formatDateLabel(week.weekStart)}</strong> — ${formatDateLabel(week.weekEnd)}</td>
-      <td>${week.cleaningCongregation || '-'}</td>
-      <td>${supplyCongregation || '-'}</td>
+      <td><span class="congregation-badge">${circle ? circle + ' ' : ''}${week.cleaningCongregation || '-'}</span></td>
     `;
     body.appendChild(row);
 
@@ -1054,16 +1212,21 @@ function renderCleaningTable() {
         <strong>${formatDateLabel(week.weekStart)} — ${formatDateLabel(week.weekEnd)}</strong>
       </div>
       <div class="cleaning-card-row">
-        <span class="cleaning-card-label">Congregazione Pulizie</span>
+        <span class="cleaning-card-label">Pulizie</span>
         <span>${week.cleaningCongregation || '-'}</span>
       </div>
       <div class="cleaning-card-row">
-        <span class="cleaning-card-label">Congregazione Approvvigionamento</span>
+        <span class="cleaning-card-label">Approvvigionamento</span>
         <span>${supplyCongregation || '-'}</span>
       </div>
     `;
     cardsContainer.appendChild(card);
   });
+
+  if (pendingSupplyCardRow) {
+    body.appendChild(pendingSupplyCardRow);
+    pendingSupplyCardRow = null;
+  }
 
   // Tabella admin: tutte le settimane
   rows.forEach(week => {
