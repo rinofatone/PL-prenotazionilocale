@@ -1879,6 +1879,11 @@ document.getElementById('googleLoginBtn').addEventListener('click', () => {
   if (adminLoginError) adminLoginError.textContent = '';
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider).then((result) => {
+    console.log("Google login OK");
+    console.log("UID:", result.user.uid);
+    console.log("Email:", result.user.email);
+    console.log("ADMIN_UID:", ADMIN_UID);
+    console.log("Coincidono:", result.user.uid === ADMIN_UID);
     if (result.user.uid !== ADMIN_UID) {
       if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
       signOut(auth).catch(err => console.error('Errore logout:', err));
