@@ -756,7 +756,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
-  GoogleAuthProvider, signInWithRedirect, getRedirectResult
+  GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 // AVVISO CONSOLE ANTI-USO NON AUTORIZZATO
@@ -816,37 +816,7 @@ function aggiornaPannelloAdmin(user) {
   }
 }
 
-// Gestisce il risultato del redirect Google al caricamento della pagina
-console.log("[AUTH] setPersistence non impostato: Firebase usa LOCAL (IndexedDB) per default");
-getRedirectResult(auth).then((result) => {
-  console.log("[AUTH] getRedirectResult risolto. result:", result);
-  console.log("[AUTH] result.user:", result?.user ?? "null (nessun redirect in corso)");
-  console.log("[AUTH] auth.currentUser al momento di getRedirectResult:", auth.currentUser);
-  if (!result) {
-    console.log("[AUTH] result è null → nessun redirect da completare. La sessione dovrebbe essere ripristinata da onAuthStateChanged.");
-    return;
-  }
-  console.log("[AUTH] redirect completato. UID:", result.user.uid, "Email:", result.user.email);
-  if (result.user.uid !== ADMIN_UID) {
-    console.warn("[AUTH] Utente non autorizzato (" + result.user.uid + "). Eseguo signOut.");
-    const adminLoginError = document.getElementById('adminLoginError');
-    if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
-    signOut(auth).catch(err => console.error('Errore logout:', err));
-  } else {
-    // Redirect avvenuto con successo: apri il modale e mostra l'area admin
-    const modal = document.getElementById('adminModal');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-    }
-    aggiornaPannelloAdmin(result.user);
-  }
-}).catch(err => {
-  console.error('[AUTH] Errore in getRedirectResult. Codice:', err.code, '| Messaggio:', err.message, '| Errore completo:', err);
-  const adminLoginError = document.getElementById('adminLoginError');
-  if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
-});
+
 
 let currentReservations = [];
 let cleaningWeeks = [];
@@ -885,8 +855,6 @@ function formatCreatedAt(createdAt) {
 
 // Rileva cambio stato autenticazione
 onAuthStateChanged(auth, (user) => {
-  console.log("[AUTH] onAuthStateChanged — user:", user ? ("UID=" + user.uid + " email=" + user.email) : "null (non autenticato)");
-  console.log("[AUTH] auth.currentUser al momento di onAuthStateChanged:", auth.currentUser);
   aggiornaPannelloAdmin(user);
   renderAdminList();
   renderCleaningTable();
@@ -1910,9 +1878,21 @@ adminLogin.addEventListener('submit', (e) => {
 document.getElementById('googleLoginBtn').addEventListener('click', () => {
   if (adminLoginError) adminLoginError.textContent = '';
   const provider = new GoogleAuthProvider();
-  console.log("[AUTH] Avvio signInWithRedirect con GoogleAuthProvider");
-  signInWithRedirect(auth, provider).catch(err => {
-    console.error('[AUTH] Errore in signInWithRedirect. Codice:', err.code, '| Messaggio:', err.message);
+  signInWithPopup(auth, provider).then((result) => {
+    if (result.user.uid !== ADMIN_UID) {
+      if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
+      signOut(auth).catch(err => console.error('Errore logout:', err));
+    } else {
+      const modal = document.getElementById('adminModal');
+      if (modal) {
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+      }
+      aggiornaPannelloAdmin(result.user);
+    }
+  }).catch(err => {
+    console.error('Errore login Google:', err);
     if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
   });
 });
