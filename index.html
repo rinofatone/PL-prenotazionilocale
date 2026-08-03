@@ -787,12 +787,13 @@ const ADMIN_UID = 'OqtWsZYJHIV7ejsf7UsDJJOoUmy2';
 
 // Aggiorna la visibilità di adminArea e del form di login in base all'utente autenticato
 function aggiornaPannelloAdmin(user) {
-  currentUser = user;
-  isAdmin = !!user && user.uid === ADMIN_UID;
+  const resolvedUser = user || auth.currentUser;
+  currentUser = resolvedUser;
+  isAdmin = !!resolvedUser && resolvedUser.uid === ADMIN_UID;
 
-  console.log("UID autenticato:", user?.uid);
+  console.log("UID autenticato:", resolvedUser?.uid);
   console.log("ADMIN_UID:", ADMIN_UID);
-  console.log("Coincidono?", user?.uid === ADMIN_UID);
+  console.log("Coincidono?", resolvedUser?.uid === ADMIN_UID);
   console.log("isAdmin:", isAdmin);
 
   const adminArea = document.getElementById('adminArea');
@@ -804,8 +805,8 @@ function aggiornaPannelloAdmin(user) {
     if (adminArea) adminArea.style.display = 'block';
     if (adminLoginWrap) adminLoginWrap.style.display = 'none';
     if (adminLogin) adminLogin.style.display = 'none';
-    if (adminUserInfo && user) {
-      adminUserInfo.textContent = `Loggato come: ${user.email || user.uid}`;
+    if (adminUserInfo && resolvedUser) {
+      adminUserInfo.textContent = `Loggato come: ${resolvedUser.email || resolvedUser.uid}`;
     }
   } else {
     if (adminArea) adminArea.style.display = 'none';
@@ -1880,7 +1881,12 @@ adminLogin.addEventListener('submit', (e) => {
   }
 
   signInWithEmailAndPassword(auth, email, pass)
-    .then(() => {
+    .then(({ user }) => {
+      if (user.uid !== ADMIN_UID) {
+        if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
+        return signOut(auth);
+      }
+      aggiornaPannelloAdmin(user);
       if (adminLoginError) adminLoginError.textContent = '';
     })
     .catch(err => {
