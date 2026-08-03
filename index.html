@@ -756,7 +756,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
-  GoogleAuthProvider, signInWithRedirect, getRedirectResult
+  GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 // AVVISO CONSOLE ANTI-USO NON AUTORIZZATO
@@ -816,34 +816,7 @@ function aggiornaPannelloAdmin(user) {
   }
 }
 
-// Gestisce il risultato del redirect Google al caricamento della pagina
-getRedirectResult(auth).then((result) => {
-  console.log("Parametro user:", result?.user);
-  console.log("auth.currentUser:", auth.currentUser);
-  console.log("UID currentUser:", auth.currentUser?.uid);
-  console.log("Email currentUser:", auth.currentUser?.email);
-  console.log("ADMIN_UID:", ADMIN_UID);
-  console.log("isAdmin:", isAdmin);
-  if (!result) return;
-  if (result.user.uid !== ADMIN_UID) {
-    const adminLoginError = document.getElementById('adminLoginError');
-    if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
-    signOut(auth).catch(err => console.error('Errore logout:', err));
-  } else {
-    // Redirect avvenuto con successo: apri il modale e mostra l'area admin
-    const modal = document.getElementById('adminModal');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-    }
-    aggiornaPannelloAdmin(result.user);
-  }
-}).catch(err => {
-  console.error('Errore redirect Google:', err);
-  const adminLoginError = document.getElementById('adminLoginError');
-  if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
-});
+
 
 let currentReservations = [];
 let cleaningWeeks = [];
@@ -882,12 +855,6 @@ function formatCreatedAt(createdAt) {
 
 // Rileva cambio stato autenticazione
 onAuthStateChanged(auth, (user) => {
-  console.log("Parametro user:", user);
-  console.log("auth.currentUser:", auth.currentUser);
-  console.log("UID currentUser:", auth.currentUser?.uid);
-  console.log("Email currentUser:", auth.currentUser?.email);
-  console.log("ADMIN_UID:", ADMIN_UID);
-  console.log("isAdmin:", isAdmin);
   aggiornaPannelloAdmin(user);
   renderAdminList();
   renderCleaningTable();
@@ -1911,7 +1878,20 @@ adminLogin.addEventListener('submit', (e) => {
 document.getElementById('googleLoginBtn').addEventListener('click', () => {
   if (adminLoginError) adminLoginError.textContent = '';
   const provider = new GoogleAuthProvider();
-  signInWithRedirect(auth, provider).catch(err => {
+  signInWithPopup(auth, provider).then((result) => {
+    if (result.user.uid !== ADMIN_UID) {
+      if (adminLoginError) adminLoginError.textContent = 'Utente non autorizzato.';
+      signOut(auth).catch(err => console.error('Errore logout:', err));
+    } else {
+      const modal = document.getElementById('adminModal');
+      if (modal) {
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+      }
+      aggiornaPannelloAdmin(result.user);
+    }
+  }).catch(err => {
     console.error('Errore login Google:', err);
     if (adminLoginError) adminLoginError.textContent = `Accesso con Google non riuscito (${err.code}).`;
   });
