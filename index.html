@@ -1150,6 +1150,7 @@ function renderCleaningTable() {
 
   let currentMonthLabel = '';
   let adminMonthLabel = '';
+  let pendingSupplyCardRow = null;
 
   publicRows.forEach(week => {
     const weekStartDate = parseLocalDate(week.weekStart);
@@ -1160,6 +1161,11 @@ function renderCleaningTable() {
     const supplyCongregation = supplyMap.get(supplyKey) || CLEANING_CONGREGATIONS[0];
 
     if (monthLabel && monthLabel !== currentMonthLabel) {
+      if (pendingSupplyCardRow) {
+        body.appendChild(pendingSupplyCardRow);
+        pendingSupplyCardRow = null;
+      }
+
       currentMonthLabel = monthLabel;
 
       const monthRow = document.createElement('tr');
@@ -1180,7 +1186,7 @@ function renderCleaningTable() {
           </div>
         </td>
       `;
-      body.appendChild(supplyCardRow);
+      pendingSupplyCardRow = supplyCardRow;
 
       const cardMonthTitle = document.createElement('div');
       cardMonthTitle.className = 'cleaning-card-header';
@@ -1216,6 +1222,11 @@ function renderCleaningTable() {
     `;
     cardsContainer.appendChild(card);
   });
+
+  if (pendingSupplyCardRow) {
+    body.appendChild(pendingSupplyCardRow);
+    pendingSupplyCardRow = null;
+  }
 
   // Tabella admin: tutte le settimane
   rows.forEach(week => {
